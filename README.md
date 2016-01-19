@@ -50,8 +50,14 @@ You get these:
 # get an array of records
 GET /team/{id}/roles
 GET /role/{id}/teams
-#might also append query parameters to search for
+# might also append query parameters to search for
 GET /role/{id}/teams?members=5
+
+# you might also use scopes
+GET /teams/{scope}/roles/{scope}
+GET /team/{id}/roles/{scope}
+GET /roles/{scope}/teams/{scope}
+GET /roles/{id}/teams/{scope}
 
 # get a single record
 GET /team/{id}/role/{id}
