@@ -1,10 +1,11 @@
 export default (target, key, descriptor) => {
   let fn = descriptor.value;
 
-  descriptor.value = (request, reply) => {
+  descriptor.value = async (request, reply) => {
     try {
-      fn(request, reply);
+      await fn(request, reply);
     } catch(e) {
+      console.error(e);
       reply(e);
     }
   }

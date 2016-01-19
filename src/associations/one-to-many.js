@@ -18,11 +18,17 @@ export const list = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let list = await request.models[b.name].findAll({
+      let list = await b.findAll({
         where: {
           ...request.query,
-          [a.name + 'Id']: request.params.aid
-        }
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       reply(list);
@@ -37,11 +43,17 @@ export const destroy = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let list = await request.models[b.name].findAll({
+      let list = await b.findAll({
         where: {
-          ...request.query,
-          [a.name + 'Id']: request.params.aid
-        }
+          ...request.query
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       await* list.map(instance => instance.destroy());
@@ -58,11 +70,17 @@ export const update = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let list = await request.models[b.name].findOne({
+      let list = await b.findOne({
         where: {
-          ...request.query,
-          [a.name + 'Id']: request.params.aid
-        }
+          ...request.query
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       await* list.map(instance => instance.update(request.payload));

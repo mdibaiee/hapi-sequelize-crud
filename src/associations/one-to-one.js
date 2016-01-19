@@ -19,11 +19,17 @@ export const get = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let instance = await request.models[b.name].findOne({
+      let instance = await b.findOne({
         where: {
-          id: request.params.bid,
-          [a.name + 'Id']: request.params.aid
-        }
+          id: request.params.bid
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       reply(instance);
@@ -53,11 +59,17 @@ export const destroy = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let instance = await request.models[b.name].findOne({
+      let instance = await b.findOne({
         where: {
-          id: request.params.bid,
-          [a.name + 'Id']: request.params.aid
-        }
+          id: request.params.bid
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       await instance.destroy();
@@ -74,11 +86,17 @@ export const update = (server, a, b) => {
 
     @error
     async handler(request, reply) {
-      let instance = await request.models[b.name].findOne({
+      let instance = await b.findOne({
         where: {
-          id: request.params.bid,
-          [a.name + 'Id']: request.params.aid
-        }
+          id: request.params.bid
+        },
+
+        include: [{
+          model: a,
+          where: {
+            id: request.params.aid
+          }
+        }]
       });
 
       await instance.update(request.payload);

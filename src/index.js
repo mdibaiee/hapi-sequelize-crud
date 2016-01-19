@@ -37,16 +37,23 @@ const register = (server, options = {}, next) => {
           associations.oneToOne(server, target, source, options);
         }
 
-        if (sourceType === 'BelongsTo' && (targetType === 'HasMany')) {
+        if (sourceType === 'BelongsTo' && targetType === 'HasMany') {
           associations.oneToOne(server, source, target, options);
           associations.oneToOne(server, target, source, options);
+          associations.oneToMany(server, target, source, options);
+        }
+
+        if (sourceType === 'BelongsToMany' && targetType === 'BelongsToMany') {
+          associations.oneToOne(server, source, target, options);
+          associations.oneToOne(server, target, source, options);
+
+          associations.oneToMany(server, source, target, options);
           associations.oneToMany(server, target, source, options);
         }
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.
       }
-      console.log(sourceName.singular, sourceType, targetName.singular, ' & ', targetName.singular, targetType, sourceName.singular);
     }
   }
 

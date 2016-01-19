@@ -21,8 +21,7 @@ export const list = (server, model) => {
 
     @error
     async handler(request, reply) {
-      console.log(request.models[model.name], request.query);
-      let list = await request.models[model.name].findAll({
+      let list = await model.findAll({
         where: request.query
       });
 
@@ -40,7 +39,7 @@ export const get = (server, model) => {
     async handler(request, reply) {
       let where = request.params.id ? { id : request.params.id } : request.query;
 
-      let instance = await request.models[model.name].findOne({ where });
+      let instance = await model.findOne({ where });
 
       reply(instance);
     },
@@ -63,7 +62,7 @@ export const scope = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let list = await request.models[model.name].scope(request.params.scope).findAll();
+      let list = await model.scope(request.params.scope).findAll();
 
       reply(list);
     },
@@ -84,7 +83,7 @@ export const create = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await request.models[model.name].create(request.payload);
+      let instance = await model.create(request.payload);
 
       reply(instance);
     }
@@ -100,7 +99,7 @@ export const destroy = (server, model) => {
     async handler(request, reply) {
       let where = request.params.id ? { id : request.params.id } : request.query;
 
-      let list = await request.models[model.name].findAll({ where });
+      let list = await model.findAll({ where });
 
       await* list.map(instance => instance.destroy());
 
@@ -116,7 +115,7 @@ export const update = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await request.models[model.name].findOne({
+      let instance = await model.findOne({
         where: {
           id: request.params.id
         }
