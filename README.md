@@ -71,4 +71,7 @@ DELETE /role/{id}/teams?members=5
 
 DELETE /team/{id}/role/{id}
 DELETE /role/{id}/team/{id}
+
+# you can specify a prefix to change the URLs like this:
+GET /v1/team/{id}/roles
 ```
