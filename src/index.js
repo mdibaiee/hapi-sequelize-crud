@@ -50,6 +50,9 @@ const register = (server, options = {}, next) => {
           associations.oneToMany(server, source, target, options);
           associations.oneToMany(server, target, source, options);
         }
+
+        associations.associate(server, source, target, options);
+        associations.associate(server, target, source, options);
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.

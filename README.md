@@ -78,6 +78,9 @@ DELETE /role/{id}/teams?members=5
 DELETE /team/{id}/role/{id}
 DELETE /role/{id}/team/{id}
 
+# you also get routes to associate objects with each other
+GET /associate/role/{id}/employee/{id} # associates role {id} with employee {id}
+
 # you can specify a prefix to change the URLs like this:
 GET /v1/team/{id}/roles
 ```
