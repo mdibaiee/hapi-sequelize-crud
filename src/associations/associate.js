@@ -7,7 +7,6 @@ let prefix;
 export default (server, a, b, options) => {
   prefix = options.prefix;
 
-  console.log(`${prefix}/associate/${a._singular}/{aid}/${b._singular}/{bid}`);
   server.route({
     method: 'GET',
     path: `${prefix}/associate/${a._singular}/{aid}/${b._singular}/{bid}`,

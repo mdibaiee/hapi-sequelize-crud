@@ -15,15 +15,11 @@ export default (server, a, b, options) => {
 export const get = (server, a, b) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${a._singular}/{aid}/${b._singular}`,
 
     @error
     async handler(request, reply) {
       let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
-
         include: [{
           model: a,
           where: {
