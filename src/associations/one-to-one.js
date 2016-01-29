@@ -1,5 +1,6 @@
 import joi from 'joi';
 import error from '../error';
+import _ from 'lodash';
 
 let prefix;
 
@@ -19,13 +20,17 @@ export const get = (server, a, b) => {
 
     @error
     async handler(request, reply) {
+      let include = [];
+      if (request.query.include)
+        include = [request.models[request.query.include]];
+
       let instance = await b.findOne({
-        include: [{
+        include: include.concat({
           model: a,
           where: {
             id: request.params.aid
           }
-        }]
+        })
       });
 
       reply(instance);
@@ -70,7 +75,7 @@ export const destroy = (server, a, b) => {
 
       await instance.destroy();
 
-      reply();
+      reply(instance);
     }
   })
 }

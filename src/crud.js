@@ -1,5 +1,6 @@
 import joi from 'joi';
 import error from './error';
+import _ from 'lodash';
 
 let prefix;
 
@@ -11,6 +12,7 @@ export default (server, model, options) => {
   scope(server, model);
   create(server, model);
   destroy(server, model);
+  destroyScope(server, model);
   update(server, model);
 }
 
@@ -21,8 +23,13 @@ export const list = (server, model) => {
 
     @error
     async handler(request, reply) {
+      if (request.query.include)
+        var include = [request.models[request.query.include]];
+
+      let where = _.omit(request.query, 'include');
+
       let list = await model.findAll({
-        where: request.query
+        where, include
       });
 
       reply(list);
@@ -37,9 +44,12 @@ export const get = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let where = request.params.id ? { id : request.params.id } : request.query;
+      if (request.query.include)
+        var include = [request.models[request.query.include]];
 
-      let instance = await model.findOne({ where });
+      let where = request.params.id ? { id : request.params.id } : _.omit(request.query, 'include');
+
+      let instance = await model.findOne({ where, include });
 
       reply(instance);
     },
@@ -62,7 +72,12 @@ export const scope = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let list = await model.scope(request.params.scope).findAll();
+      if (request.query.include)
+        var include = [request.models[request.query.include]];
+
+      let where = _.omit(request.query, 'include');
+
+      let list = await model.scope(request.params.scope).findAll({ include, where });
 
       reply(list);
     },
@@ -103,15 +118,45 @@ export const destroy = (server, model) => {
 
       await* list.map(instance => instance.destroy());
 
-      reply();
+      reply(list.length === 1 ? list[0] : list);
     }
   })
+}
+
+export const destroyScope = (server, model) => {
+  let scopes = Object.keys(model.options.scopes);
+
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}/{scope}`,
+
+    @error
+    async handler(request, reply) {
+      if (request.query.include)
+        var include = [request.models[request.query.include]];
+
+      let where = _.omit(request.query, 'include');
+
+      let list = await model.scope(request.params.scope).findAll({ include, where });
+
+      await* list.map(instance => instance.destroy());
+
+      reply(list);
+    },
+    config: {
+      validate: {
+        params: joi.object().keys({
+          scope: joi.string().valid(...scopes)
+        })
+      }
+    }
+  });
 }
 
 export const update = (server, model) => {
   server.route({
     method: 'PUT',
-    path: `/v1/${model._singular}/{id}`,
+    path: `${prefix}/${model._singular}/{id}`,
 
     @error
     async handler(request, reply) {
