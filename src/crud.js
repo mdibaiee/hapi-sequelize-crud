@@ -28,6 +28,14 @@ export const list = (server, model) => {
 
       let where = _.omit(request.query, 'include');
 
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
+
       let list = await model.findAll({
         where, include
       });
@@ -48,6 +56,14 @@ export const get = (server, model) => {
         var include = [request.models[request.query.include]];
 
       let where = request.params.id ? { id : request.params.id } : _.omit(request.query, 'include');
+
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
 
       let instance = await model.findOne({ where, include });
 
@@ -76,6 +92,14 @@ export const scope = (server, model) => {
         var include = [request.models[request.query.include]];
 
       let where = _.omit(request.query, 'include');
+
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
 
       let list = await model.scope(request.params.scope).findAll({ include, where });
 
@@ -114,6 +138,14 @@ export const destroy = (server, model) => {
     async handler(request, reply) {
       let where = request.params.id ? { id : request.params.id } : request.query;
 
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
+
       let list = await model.findAll({ where });
 
       await* list.map(instance => instance.destroy());
@@ -136,6 +168,14 @@ export const destroyScope = (server, model) => {
         var include = [request.models[request.query.include]];
 
       let where = _.omit(request.query, 'include');
+
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
 
       let list = await model.scope(request.params.scope).findAll({ include, where });
 

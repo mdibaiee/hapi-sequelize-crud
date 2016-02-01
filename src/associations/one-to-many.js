@@ -58,6 +58,14 @@ export const list = (server, a, b) => {
 
       let where = _.omit(request.query, 'include');
 
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
+
       let list = await b.findAll({
         where,
 
@@ -88,6 +96,14 @@ export const scope = (server, a, b) => {
         include = [request.models[request.query.include]];
 
       let where = _.omit(request.query, 'include');
+
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
 
       let list = await b.scope(request.params.scope).findAll({
         where,
@@ -131,6 +147,14 @@ export const scopeScope = (server, a, b) => {
 
       let where = _.omit(request.query, 'include');
 
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
+
       let list = await b.scope(request.params.scopeb).findAll({
         where,
         include: include.concat({
@@ -161,6 +185,14 @@ export const destroy = (server, a, b) => {
     async handler(request, reply) {
       let where = _.omit(request.query, 'include');
 
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
+
       let list = await b.findAll({
         where,
         include: {
@@ -188,6 +220,14 @@ export const destroyScope = (server, a, b) => {
     @error
     async handler(request, reply) {
       let where = _.omit(request.query, 'include');
+
+      for (const key of Object.keys(where)) {
+        try {
+          where[key] = JSON.parse(where[key]);
+        } catch (e) {
+          //
+        }
+      }
 
       let list = await b.scope(request.params.scope).findAll({
         where,
