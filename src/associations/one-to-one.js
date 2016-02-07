@@ -24,7 +24,11 @@ export const get = (server, a, b) => {
       if (request.query.include)
         include = [request.models[request.query.include]];
 
-      let instance = await b.findOne({
+      let where = _.omit(request.query, 'include');
+
+      let [instance] = await b.findAll({
+        where,
+
         include: include.concat({
           model: a,
           where: {
