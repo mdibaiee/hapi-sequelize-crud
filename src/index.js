@@ -1,10 +1,26 @@
 import crud, { associations } from './crud';
+import url from 'url';
+import qs from 'qs';
 
 const register = (server, options = {}, next) => {
   options.prefix = options.prefix || '';
 
 	let db = server.plugins['hapi-sequelize'].db;
 	let models = db.sequelize.models;
+
+  const onRequest = function (request, reply) {
+    const uri = request.raw.req.url;
+    const parsed = url.parse(uri, false);
+    parsed.query = qs.parse(parsed.query);
+    request.setUrl(parsed);
+
+    return reply.continue();
+  };
+
+  server.ext({
+    type: 'onRequest',
+    method: onRequest
+  });
 
   for (let modelName of Object.keys(models)) {
     let model = models[modelName];
