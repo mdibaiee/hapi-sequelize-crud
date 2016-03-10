@@ -36,12 +36,25 @@ const register = (server, options = {}, next) => {
     for (let key of Object.keys(model.associations)) {
       let association = model.associations[key];
       let { associationType, source, target } = association;
+      // console.dir(association, null, { depth: null });
 
       let sourceName = source.options.name;
       let targetName = target.options.name;
 
-      target._plural = targetName.plural.toLowerCase();
-      target._singular = targetName.singular.toLowerCase();
+
+      const names = (rev) => {
+        const arr =  [{
+            plural: sourceName.plural.toLowerCase(),
+            singular: sourceName.singular.toLowerCase(),
+            original: sourceName
+          }, {
+            plural: association.options.name.plural.toLowerCase(),
+            singular: association.options.name.singular.toLowerCase(),
+            original: association.options.name
+          }];
+
+        return rev ? { b: arr[0], a: arr[1] } : { a: arr[0], b: arr[1] };
+      }
 
       let targetAssociations = target.associations[sourceName.plural] || target.associations[sourceName.singular];
       let sourceType = association.associationType,
@@ -49,26 +62,26 @@ const register = (server, options = {}, next) => {
 
       try {
         if (sourceType === 'BelongsTo' && (targetType === 'BelongsTo' || !targetType)) {
-          associations.oneToOne(server, source, target, options);
-          associations.oneToOne(server, target, source, options);
+          associations.oneToOne(server, source, target, names(), options);
+          associations.oneToOne(server, target, source, names(1), options);
         }
 
         if (sourceType === 'BelongsTo' && targetType === 'HasMany') {
-          associations.oneToOne(server, source, target, options);
-          associations.oneToOne(server, target, source, options);
-          associations.oneToMany(server, target, source, options);
+          associations.oneToOne(server, source, target, names(), options);
+          associations.oneToOne(server, target, source, names(1), options);
+          associations.oneToMany(server, target, source, names(1), options);
         }
 
         if (sourceType === 'BelongsToMany' && targetType === 'BelongsToMany') {
-          associations.oneToOne(server, source, target, options);
-          associations.oneToOne(server, target, source, options);
+          associations.oneToOne(server, source, target, names(), options);
+          associations.oneToOne(server, target, source, names(1), options);
 
-          associations.oneToMany(server, source, target, options);
-          associations.oneToMany(server, target, source, options);
+          associations.oneToMany(server, source, target, names(), options);
+          associations.oneToMany(server, target, source, names(1), options);
         }
 
-        associations.associate(server, source, target, options);
-        associations.associate(server, target, source, options);
+        associations.associate(server, source, target, names(), options);
+        associations.associate(server, target, source, names(1), options);
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.

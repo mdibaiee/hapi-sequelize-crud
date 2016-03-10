@@ -1,6 +1,7 @@
 import joi from 'joi';
 import error from './error';
 import _ from 'lodash';
+import { parseInclude, parseWhere } from './utils';
 
 let prefix;
 
@@ -23,20 +24,10 @@ export const list = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await model.findAll({
+      const list = await model.findAll({
         where, include
       });
 
@@ -52,20 +43,10 @@ export const get = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = request.params.id ? { id : request.params.id } : _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let instance = await model.findOne({ where, include });
+      const instance = await model.findOne({ where, include });
 
       reply(instance);
     },
@@ -88,20 +69,10 @@ export const scope = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await model.scope(request.params.scope).findAll({ include, where });
+      const list = await model.scope(request.params.scope).findAll({ include, where });
 
       reply(list);
     },
@@ -122,7 +93,7 @@ export const create = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await model.create(request.payload);
+      const instance = await model.create(request.payload);
 
       reply(instance);
     }
@@ -136,17 +107,10 @@ export const destroy = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let where = request.params.id ? { id : request.params.id } : request.query;
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await model.findAll({ where });
+      const list = await model.findAll({ where });
 
       await* list.map(instance => instance.destroy());
 
@@ -164,18 +128,8 @@ export const destroyScope = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
       let list = await model.scope(request.params.scope).findAll({ include, where });
 

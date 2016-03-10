@@ -78,6 +78,10 @@ DELETE /role/{id}/teams?members=5
 DELETE /team/{id}/role/{id}
 DELETE /role/{id}/team/{id}
 
+# include
+# include nested associations (you can specify an array if includes)
+GET /team/{id}/role/{id}?include=SomeRoleAssociation
+
 # you also get routes to associate objects with each other
 GET /associate/role/{id}/employee/{id} # associates role {id} with employee {id}
 

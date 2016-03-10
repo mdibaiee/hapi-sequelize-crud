@@ -1,118 +1,94 @@
 import joi from 'joi';
 import error from '../error';
 import _ from 'lodash';
+import { parseInclude, parseWhere, getMethod } from '../utils';
 
 let prefix;
 
-export default (server, a, b, options) => {
+export default (server, a, b, names, options) => {
   prefix = options.prefix;
 
-  get(server, a, b);
-  list(server, a, b);
-  scope(server, a, b);
-  scopeScope(server, a, b);
-  destroy(server, a, b);
-  destroyScope(server, a, b);
-  update(server, a, b);
+  get(server, a, b, names);
+  list(server, a, b, names);
+  scope(server, a, b, names);
+  scopeScope(server, a, b, names);
+  destroy(server, a, b, names);
+  destroyScope(server, a, b, names);
+  update(server, a, b, names);
 }
 
-export const get = (server, a, b) => {
+export const get = (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
+      const include = parseInclude(request);
 
-      let instance = await b.findOne({
+      const base = a.findOne({
         where: {
-          id: request.params.bid
-        },
-
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
+          id: request.params.aid
+        }
       });
+
+      const method = getMethod(base, names.b);
+      const list = await method({ where: {
+        id: request.params.bid
+      }, include });
 
       reply(list);
     }
   })
 }
 
-export const list = (server, a, b) => {
+export const list = (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
         }
-      }
-
-      let list = await b.findAll({
-        where,
-
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
       });
+
+      const method = getMethod(base, names.b);
+      const list = await method({ where, include });
 
       reply(list);
     }
   })
 }
 
-export const scope = (server, a, b) => {
+export const scope = (server, a, b, names) => {
   let scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
         }
-      }
+      });
 
-      let list = await b.scope(request.params.scope).findAll({
+      const method = getMethod(base, names.b);
+      const list = await method({
+        scope: request.params.scope,
         where,
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
+        include
       });
 
       reply(list);
@@ -129,7 +105,7 @@ export const scope = (server, a, b) => {
   })
 }
 
-export const scopeScope = (server, a, b) => {
+export const scopeScope = (server, a, b, names) => {
   let scopes = {
     a: Object.keys(a.options.scopes),
     b: Object.keys(b.options.scopes)
@@ -137,23 +113,12 @@ export const scopeScope = (server, a, b) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{scopea}/${b._plural}/{scopeb}`,
+    path: `${prefix}/${names.a.plural}/{scopea}/${names.b.plural}/{scopeb}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
       let list = await b.scope(request.params.scopeb).findAll({
         where,
@@ -176,32 +141,22 @@ export const scopeScope = (server, a, b) => {
   })
 }
 
-export const destroy = (server, a, b) => {
+export const destroy = (server, a, b, names) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      let where = _.omit(request.query, 'include');
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.findAll({
-        where,
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }
+      const base = await a.findOne({
+        where: request.params.aid
       });
+
+      const method = getMethod(base, names.b);
+      const list = await method({ where, include });
 
       await* list.map(instance => instance.destroy());
 
@@ -210,34 +165,29 @@ export const destroy = (server, a, b) => {
   })
 }
 
-export const destroyScope = (server, a, b) => {
+export const destroyScope = (server, a, b, names) => {
   let scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
 
     @error
     async handler(request, reply) {
-      let where = _.omit(request.query, 'include');
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
         }
-      }
+      });
 
-      let list = await b.scope(request.params.scope).findAll({
+      const method = getMethod(base, names.b);
+      const list = await method({
+        scope: request.params.scope,
         where,
-
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }
+        include
       });
 
       await* list.map(instance => instance.destroy());
@@ -256,23 +206,24 @@ export const destroyScope = (server, a, b) => {
   });
 }
 
-export const update = (server, a, b) => {
+export const update = (server, a, b, names) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      let list = await b.findOne({
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid,
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-            ...request.query
-          }
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
         }
       });
+
+      const method = getMethod(base, names.b);
+      const list = await method({ where, include });
 
       await* list.map(instance => instance.update(request.payload));
 

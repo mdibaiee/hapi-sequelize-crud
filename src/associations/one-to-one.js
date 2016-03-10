@@ -1,82 +1,87 @@
 import joi from 'joi';
 import error from '../error';
 import _ from 'lodash';
+import { parseInclude, parseWhere, getMethod } from '../utils';
 
 let prefix;
 
-export default (server, a, b, options) => {
+export default (server, a, b, names, options) => {
   prefix = options.prefix;
 
-  get(server, a, b);
-  create(server, a, b);
-  destroy(server, a, b);
-  update(server, a, b);
+  get(server, a, b, names);
+  create(server, a, b, names);
+  destroy(server, a, b, names);
+  update(server, a, b, names);
 }
 
-export const get = (server, a, b) => {
+export const get = (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-      let where = _.omit(request.query, 'include');
-
-      let [instance] = await b.findAll({
-        where,
-
-        include: include.concat({
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        })
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
+        }
       });
+      const method = getMethod(base, names.b, false);
 
-      reply(instance);
+      const list = await method({ where, include, limit: 1 });
+
+      if (Array.isArray(list)) {
+        reply(list[0]);
+      } else {
+        reply(list);
+      }
     }
   })
 }
 
-export const create = (server, a, b) => {
+export const create = (server, a, b, names) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${a._singular}/{id}/${b._singular}`,
+    path: `${prefix}/${names.a.singular}/{id}/${names.b.singular}`,
 
     @error
     async handler(request, reply) {
-      request.payload[a.name + 'Id'] = request.params.id;
-      let instance = await request.models[b.name].create(request.payload);
+      const base = await a.findOne({
+        where: {
+          id: request.params.id
+        }
+      });
+
+      const method = getMethod(base, names.b, false, 'create');
+      const instance = await method(request.payload);
 
       reply(instance);
     }
   })
 }
 
-export const destroy = (server, a, b) => {
+export const destroy = (server, a, b, names) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-        include: [{
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }]
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
+        }
       });
 
+      const method = getMethod(base, names.b, false);
+
+      const instance = await method({ where, include });
       await instance.destroy();
 
       reply(instance);
@@ -84,26 +89,25 @@ export const destroy = (server, a, b) => {
   })
 }
 
-export const update = (server, a, b) => {
+export const update = (server, a, b, names) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
+      const include = parseInclude(request);
+      const where = parseWhere(request);
 
-        include: [{
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }]
+      const base = await a.findOne({
+        where: {
+          id: request.params.aid
+        }
       });
 
+      const method = getMethod(base, names.b, false);
+
+      const instance = await method({ where, include });
       await instance.update(request.payload);
 
       reply(instance);

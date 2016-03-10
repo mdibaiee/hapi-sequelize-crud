@@ -1,15 +1,16 @@
 import joi from 'joi';
 import error from '../error';
 import { capitalize } from 'lodash/string';
+import { getMethod } from '../utils';
 
 let prefix;
 
-export default (server, a, b, options) => {
+export default (server, a, b, names, options) => {
   prefix = options.prefix;
 
   server.route({
     method: 'GET',
-    path: `${prefix}/associate/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/associate/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
@@ -25,12 +26,15 @@ export default (server, a, b, options) => {
         }
       });
 
-      let fna = (instancea['add' + b.name] || instancea['set' + b.name]).bind(instancea);
-      let fnb = (instanceb['add' + a.name] || instanceb['set' + a.name]).bind(instanceb);
+      const fna = getMethod(instancea, names.b, false, 'add') ||
+                  getMethod(instancea, names.b, false, 'set');
+      const fnb = getMethod(instanceb, names.a, false, 'add') ||
+                  getMethod(instanceb, names.a, false, 'set');
+
       await fna(instanceb);
       await fnb(instancea);
 
-      reply(instancea);
+      reply([instancea, instanceb]);
     }
   })
 }
