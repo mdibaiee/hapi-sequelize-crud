@@ -45,6 +45,7 @@ export const get = (server, model) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+      if (request.params.id) where.id = request.params.id;
 
       const instance = await model.findOne({ where, include });
 
@@ -109,6 +110,7 @@ export const destroy = (server, model) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+      if (request.params.id) where.id = id;
 
       const list = await model.findAll({ where });
 
