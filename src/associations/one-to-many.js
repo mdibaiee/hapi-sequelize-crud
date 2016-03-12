@@ -152,7 +152,9 @@ export const destroy = (server, a, b, names) => {
       const where = parseWhere(request);
 
       const base = await a.findOne({
-        where: request.params.aid
+        where: {
+          id: request.params.aid
+        }
       });
 
       const method = getMethod(base, names.b);
