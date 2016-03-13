@@ -31,8 +31,8 @@ export default (server, a, b, names, options) => {
       const fnb = getMethod(instanceb, names.a, false, 'add') ||
                   getMethod(instanceb, names.a, false, 'set');
 
-      await fna(instanceb);
-      await fnb(instancea);
+      fnb(instancea);
+      fna(instanceb);
 
       reply([instancea, instanceb]);
     }
