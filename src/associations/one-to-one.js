@@ -79,10 +79,9 @@ export const destroy = (server, a, b, names) => {
         }
       });
 
-      const method = getMethod(base, names.b, false);
+      const method = getMethod(base, names.b, false, 'destroy');
 
       const instance = await method({ where, include });
-      await instance.destroy();
 
       reply(instance);
     }

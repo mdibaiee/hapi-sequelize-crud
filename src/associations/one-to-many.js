@@ -157,10 +157,8 @@ export const destroy = (server, a, b, names) => {
         }
       });
 
-      const method = getMethod(base, names.b);
+      const method = getMethod(base, names.b, true, 'destroy');
       const list = await method({ where, include });
-
-      await* list.map(instance => instance.destroy());
 
       reply(list);
     }
@@ -185,7 +183,7 @@ export const destroyScope = (server, a, b, names) => {
         }
       });
 
-      const method = getMethod(base, names.b);
+      const method = getMethod(base, names.b, true, 'destroy');
       const list = await method({
         scope: request.params.scope,
         where,

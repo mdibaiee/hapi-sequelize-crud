@@ -26,13 +26,9 @@ export default (server, a, b, names, options) => {
         }
       });
 
-      const fna = getMethod(instancea, names.b, false, 'add') ||
-                  getMethod(instancea, names.b, false, 'set');
-      const fnb = getMethod(instanceb, names.a, false, 'add') ||
-                  getMethod(instanceb, names.a, false, 'set');
-
-      fnb(instancea);
-      fna(instanceb);
+      const fn = getMethod(instancea, names.b, false, 'add') ||
+                 getMethod(instancea, names.b, false, 'set');
+      await fn(instanceb);
 
       reply([instancea, instanceb]);
     }
