@@ -157,8 +157,11 @@ export const destroy = (server, a, b, names) => {
         }
       });
 
-      const method = getMethod(base, names.b, true, 'destroy');
+      const method = getMethod(base, names.b, true, 'get');
       const list = await method({ where, include });
+      await Promise.all(list.map(item =>
+        item.destroy()
+      ));
 
       reply(list);
     }
@@ -183,7 +186,8 @@ export const destroyScope = (server, a, b, names) => {
         }
       });
 
-      const method = getMethod(base, names.b, true, 'destroy');
+      const method = getMethod(base, names.b, true, 'get');
+
       const list = await method({
         scope: request.params.scope,
         where,
