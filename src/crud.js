@@ -13,6 +13,7 @@ export default (server, model, options) => {
   scope(server, model);
   create(server, model);
   destroy(server, model);
+  destroyAll(server, model);
   destroyScope(server, model);
   update(server, model);
 }
