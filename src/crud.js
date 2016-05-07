@@ -121,6 +121,25 @@ export const destroy = (server, model) => {
   })
 }
 
+export const destroyAll = (server, model) => {
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}`,
+
+    @error
+    async handler(request, reply) {
+      const include = parseInclude(request);
+      const where = parseWhere(request);
+
+      const list = await model.findAll({ where });
+
+      await* list.map(instance => instance.destroy());
+
+      reply(list.length === 1 ? list[0] : list);
+    }
+  })
+}
+
 export const destroyScope = (server, model) => {
   let scopes = Object.keys(model.options.scopes);
 
