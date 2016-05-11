@@ -1,3 +1,7 @@
+if (!global._babelPolyfill) {
+  require('babel/polyfill');
+}
+
 import crud, { associations } from './crud';
 import url from 'url';
 import qs from 'qs';
