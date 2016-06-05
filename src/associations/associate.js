@@ -4,9 +4,11 @@ import { capitalize } from 'lodash/string';
 import { getMethod } from '../utils';
 
 let prefix;
+let defaultConfig;
 
 export default (server, a, b, names, options) => {
   prefix = options.prefix;
+  defaultConfig = options.defaultConfig;
 
   server.route({
     method: 'GET',
@@ -31,6 +33,8 @@ export default (server, a, b, names, options) => {
       await fn(instanceb);
 
       reply([instancea, instanceb]);
-    }
+    },
+
+    config: defaultConfig
   })
 }

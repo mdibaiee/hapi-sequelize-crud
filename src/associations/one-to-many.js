@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { parseInclude, parseWhere, getMethod } from '../utils';
 
 let prefix;
+let defaultConfig;
 
 export default (server, a, b, names, options) => {
   prefix = options.prefix;
+  defaultConfig = options.defaultConfig;
 
   get(server, a, b, names);
   list(server, a, b, names);
@@ -38,7 +40,9 @@ export const get = (server, a, b, names) => {
       }, include });
 
       reply(list);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -62,7 +66,9 @@ export const list = (server, a, b, names) => {
       const list = await method({ where, include });
 
       reply(list);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -94,14 +100,14 @@ export const scope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: {
+    config: _.defaults({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
           aid: joi.number().integer().required()
         })
       }
-    }
+    }, defaultConfig)
   })
 }
 
@@ -130,14 +136,14 @@ export const scopeScope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: {
+    config: _.defaults({
       validate: {
         params: joi.object().keys({
           scopea: joi.string().valid(...scopes.a),
           scopeb: joi.string().valid(...scopes.b)
         })
       }
-    }
+    }, defaultConfig)
   })
 }
 
@@ -199,14 +205,14 @@ export const destroyScope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: {
+    config: _.defaults({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
           aid: joi.number().integer().required()
         })
       }
-    }
+    }, defaultConfig)
   });
 }
 
@@ -232,6 +238,8 @@ export const update = (server, a, b, names) => {
       await* list.map(instance => instance.update(request.payload));
 
       reply(list);
-    }
+    },
+
+    config: defaultConfig
   })
 }

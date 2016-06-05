@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { parseInclude, parseWhere, getMethod } from '../utils';
 
 let prefix;
+let defaultConfig;
 
 export default (server, a, b, names, options) => {
   prefix = options.prefix;
+  defaultConfig = options.defaultConfig;
 
   get(server, a, b, names);
   create(server, a, b, names);
@@ -38,7 +40,9 @@ export const get = (server, a, b, names) => {
       } else {
         reply(list);
       }
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -59,7 +63,9 @@ export const create = (server, a, b, names) => {
       const instance = await method(request.payload);
 
       reply(instance);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -84,7 +90,9 @@ export const destroy = (server, a, b, names) => {
       await instance.destroy();
 
       reply(instance);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -110,6 +118,8 @@ export const update = (server, a, b, names) => {
       await instance.update(request.payload);
 
       reply(instance);
-    }
+    },
+
+    config: defaultConfig
   })
 }
