@@ -100,7 +100,7 @@ export const scope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
@@ -136,7 +136,7 @@ export const scopeScope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scopea: joi.string().valid(...scopes.a),
@@ -205,7 +205,7 @@ export const destroyScope = (server, a, b, names) => {
       reply(list);
     },
 
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),

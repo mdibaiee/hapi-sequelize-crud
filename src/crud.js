@@ -56,7 +56,7 @@ export const get = (server, model) => {
 
       reply(instance);
     },
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           id: joi.number().integer()
@@ -82,7 +82,7 @@ export const scope = (server, model) => {
 
       reply(list);
     },
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes)
@@ -169,7 +169,7 @@ export const destroyScope = (server, model) => {
 
       reply(list);
     },
-    config: _.defaults({
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes)
