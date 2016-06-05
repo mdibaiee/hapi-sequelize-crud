@@ -27,7 +27,8 @@ associations(models); // pretend this function defines our associations
 await register({
   register: require('hapi-sequelize-crud'),
   options: {
-    prefix: '/v1'
+    prefix: '/v1',
+    defaultConfig: { ... } // passed as `config` to all routes created
   }
 });
 ```
