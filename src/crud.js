@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
 
 let prefix;
+let defaultConfig;
 
 export default (server, model, options) => {
   prefix = options.prefix;
+  defaultConfig = options.defaultConfig;
 
   list(server, model);
   get(server, model);
@@ -33,7 +35,9 @@ export const list = (server, model) => {
       });
 
       reply(list);
-    }
+    },
+
+    config: defaultConfig
   });
 }
 
@@ -52,13 +56,13 @@ export const get = (server, model) => {
 
       reply(instance);
     },
-    config: {
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           id: joi.number().integer()
         })
       }
-    }
+    }, defaultConfig)
   })
 }
 
@@ -78,13 +82,13 @@ export const scope = (server, model) => {
 
       reply(list);
     },
-    config: {
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes)
         })
       }
-    }
+    }, defaultConfig)
   });
 }
 
@@ -98,7 +102,9 @@ export const create = (server, model) => {
       const instance = await model.create(request.payload);
 
       reply(instance);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -118,7 +124,9 @@ export const destroy = (server, model) => {
       await* list.map(instance => instance.destroy());
 
       reply(list.length === 1 ? list[0] : list);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -137,7 +145,9 @@ export const destroyAll = (server, model) => {
       await* list.map(instance => instance.destroy());
 
       reply(list.length === 1 ? list[0] : list);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
@@ -159,13 +169,13 @@ export const destroyScope = (server, model) => {
 
       reply(list);
     },
-    config: {
+    config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes)
         })
       }
-    }
+    }, defaultConfig)
   });
 }
 
@@ -185,7 +195,9 @@ export const update = (server, model) => {
       await instance.update(request.payload);
 
       reply(instance);
-    }
+    },
+
+    config: defaultConfig
   })
 }
 
