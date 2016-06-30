@@ -63,7 +63,7 @@ export const get = (server, model) => {
     config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
-          id: joi.number().integer()
+          id: joi.any()
         })
       }
     }, defaultConfig)
