@@ -2,6 +2,7 @@ import joi from 'joi';
 import error from './error';
 import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
+import { notFound } from 'boom';
 
 let prefix;
 let defaultConfig;
@@ -50,9 +51,12 @@ export const get = (server, model) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
-      if (request.params.id) where.id = request.params.id;
+      const {id} = request.params;
+      if (id) where.id = id;
 
       const instance = await model.findOne({ where, include });
+
+      if (!instance) return void reply(notFound(`${id} not found.`));
 
       reply(instance);
     },
@@ -186,11 +190,14 @@ export const update = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await model.findOne({
+      const {id} = request.params;
+      const instance = await model.findOne({
         where: {
-          id: request.params.id
+          id
         }
       });
+
+      if (!instance) return void reply(notFound(`${id} not found.`));
 
       await instance.update(request.payload);
 
