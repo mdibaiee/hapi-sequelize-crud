@@ -1,6 +1,4 @@
-import joi from 'joi';
 import error from '../error';
-import { capitalize } from 'lodash/string';
 import { getMethod } from '../utils';
 
 let prefix;
@@ -18,14 +16,14 @@ export default (server, a, b, names, options) => {
     async handler(request, reply) {
       let instanceb = await b.findOne({
         where: {
-          id: request.params.bid
-        }
+          id: request.params.bid,
+        },
       });
 
       let instancea = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const fn = getMethod(instancea, names.b, false, 'add') ||
@@ -35,6 +33,6 @@ export default (server, a, b, names, options) => {
       reply([instancea, instanceb]);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};

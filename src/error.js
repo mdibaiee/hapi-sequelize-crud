@@ -8,7 +8,7 @@ export default (target, key, descriptor) => {
       console.error(e);
       reply(e);
     }
-  }
+  };
 
   return descriptor;
-}
+};

@@ -13,7 +13,7 @@ export const parseInclude = request => {
 
     return a;
   }).filter(a => a);
-}
+};
 
 export const parseWhere = request => {
   const where = omit(request.query, 'include');
@@ -27,7 +27,7 @@ export const parseWhere = request => {
   }
 
   return where;
-}
+};
 
 export const getMethod = (model, association, plural = true, method = 'get') => {
   const a = plural ? association.original.plural : association.original.singular;
@@ -36,4 +36,4 @@ export const getMethod = (model, association, plural = true, method = 'get') => 
   if (fn) return fn.bind(model);
 
   return false;
-}
+};

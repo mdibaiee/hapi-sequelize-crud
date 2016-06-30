@@ -1,6 +1,4 @@
-import joi from 'joi';
 import error from '../error';
-import _ from 'lodash';
 import { parseInclude, parseWhere, getMethod } from '../utils';
 
 let prefix;
@@ -14,7 +12,7 @@ export default (server, a, b, names, options) => {
   create(server, a, b, names);
   destroy(server, a, b, names);
   update(server, a, b, names);
-}
+};
 
 export const get = (server, a, b, names) => {
   server.route({
@@ -28,8 +26,8 @@ export const get = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
       const method = getMethod(base, names.b, false);
 
@@ -42,9 +40,9 @@ export const get = (server, a, b, names) => {
       }
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const create = (server, a, b, names) => {
   server.route({
@@ -55,8 +53,8 @@ export const create = (server, a, b, names) => {
     async handler(request, reply) {
       const base = await a.findOne({
         where: {
-          id: request.params.id
-        }
+          id: request.params.id,
+        },
       });
 
       const method = getMethod(base, names.b, false, 'create');
@@ -65,9 +63,9 @@ export const create = (server, a, b, names) => {
       reply(instance);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const destroy = (server, a, b, names) => {
   server.route({
@@ -81,8 +79,8 @@ export const destroy = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b, false, 'get');
@@ -92,9 +90,9 @@ export const destroy = (server, a, b, names) => {
       reply(instance);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const update = (server, a, b, names) => {
   server.route({
@@ -108,8 +106,8 @@ export const update = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b, false);
@@ -120,6 +118,6 @@ export const update = (server, a, b, names) => {
       reply(instance);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};

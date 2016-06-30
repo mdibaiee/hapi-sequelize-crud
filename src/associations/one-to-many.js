@@ -17,7 +17,7 @@ export default (server, a, b, names, options) => {
   destroy(server, a, b, names);
   destroyScope(server, a, b, names);
   update(server, a, b, names);
-}
+};
 
 export const get = (server, a, b, names) => {
   server.route({
@@ -30,21 +30,21 @@ export const get = (server, a, b, names) => {
 
       const base = a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b);
       const list = await method({ where: {
-        id: request.params.bid
+        id: request.params.bid,
       }, include });
 
       reply(list);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const list = (server, a, b, names) => {
   server.route({
@@ -58,8 +58,8 @@ export const list = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b);
@@ -68,9 +68,9 @@ export const list = (server, a, b, names) => {
       reply(list);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const scope = (server, a, b, names) => {
   let scopes = Object.keys(b.options.scopes);
@@ -86,15 +86,15 @@ export const scope = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b);
       const list = await method({
         scope: request.params.scope,
         where,
-        include
+        include,
       });
 
       reply(list);
@@ -104,17 +104,17 @@ export const scope = (server, a, b, names) => {
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
-          aid: joi.number().integer().required()
-        })
-      }
-    }, defaultConfig)
-  })
-}
+          aid: joi.number().integer().required(),
+        }),
+      },
+    }, defaultConfig),
+  });
+};
 
 export const scopeScope = (server, a, b, names) => {
   let scopes = {
     a: Object.keys(a.options.scopes),
-    b: Object.keys(b.options.scopes)
+    b: Object.keys(b.options.scopes),
   };
 
   server.route({
@@ -129,9 +129,9 @@ export const scopeScope = (server, a, b, names) => {
       let list = await b.scope(request.params.scopeb).findAll({
         where,
         include: include.concat({
-          model: a.scope(request.params.scopea)
-        })
-      })
+          model: a.scope(request.params.scopea),
+        }),
+      });
 
       reply(list);
     },
@@ -140,12 +140,12 @@ export const scopeScope = (server, a, b, names) => {
       validate: {
         params: joi.object().keys({
           scopea: joi.string().valid(...scopes.a),
-          scopeb: joi.string().valid(...scopes.b)
-        })
-      }
-    }, defaultConfig)
-  })
-}
+          scopeb: joi.string().valid(...scopes.b),
+        }),
+      },
+    }, defaultConfig),
+  });
+};
 
 export const destroy = (server, a, b, names) => {
   server.route({
@@ -159,8 +159,8 @@ export const destroy = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b, true, 'get');
@@ -170,9 +170,9 @@ export const destroy = (server, a, b, names) => {
       ));
 
       reply(list);
-    }
-  })
-}
+    },
+  });
+};
 
 export const destroyScope = (server, a, b, names) => {
   let scopes = Object.keys(b.options.scopes);
@@ -188,8 +188,8 @@ export const destroyScope = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b, true, 'get');
@@ -197,10 +197,10 @@ export const destroyScope = (server, a, b, names) => {
       const list = await method({
         scope: request.params.scope,
         where,
-        include
+        include,
       });
 
-      await* list.map(instance => instance.destroy());
+      await Promise.all(list.map(instance => instance.destroy()));
 
       reply(list);
     },
@@ -209,12 +209,12 @@ export const destroyScope = (server, a, b, names) => {
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
-          aid: joi.number().integer().required()
-        })
-      }
-    }, defaultConfig)
+          aid: joi.number().integer().required(),
+        }),
+      },
+    }, defaultConfig),
   });
-}
+};
 
 export const update = (server, a, b, names) => {
   server.route({
@@ -228,18 +228,18 @@ export const update = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid
-        }
+          id: request.params.aid,
+        },
       });
 
       const method = getMethod(base, names.b);
       const list = await method({ where, include });
 
-      await* list.map(instance => instance.update(request.payload));
+      await Promise.all(list.map(instance => instance.update(request.payload)));
 
       reply(list);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};

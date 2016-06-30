@@ -19,7 +19,7 @@ export default (server, model, options) => {
   destroyAll(server, model);
   destroyScope(server, model);
   update(server, model);
-}
+};
 
 export const list = (server, model) => {
   server.route({
@@ -32,15 +32,15 @@ export const list = (server, model) => {
       const where = parseWhere(request);
 
       const list = await model.findAll({
-        where, include
+        where, include,
       });
 
       reply(list);
     },
 
-    config: defaultConfig
+    config: defaultConfig,
   });
-}
+};
 
 export const get = (server, model) => {
   server.route({
@@ -63,12 +63,12 @@ export const get = (server, model) => {
     config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
-          id: joi.any()
-        })
-      }
-    }, defaultConfig)
-  })
-}
+          id: joi.any(),
+        }),
+      },
+    }, defaultConfig),
+  });
+};
 
 export const scope = (server, model) => {
   let scopes = Object.keys(model.options.scopes);
@@ -89,12 +89,12 @@ export const scope = (server, model) => {
     config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
-          scope: joi.string().valid(...scopes)
-        })
-      }
-    }, defaultConfig)
+          scope: joi.string().valid(...scopes),
+        }),
+      },
+    }, defaultConfig),
   });
-}
+};
 
 export const create = (server, model) => {
   server.route({
@@ -108,9 +108,9 @@ export const create = (server, model) => {
       reply(instance);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const destroy = (server, model) => {
   server.route({
@@ -119,20 +119,19 @@ export const destroy = (server, model) => {
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
       const where = parseWhere(request);
       if (request.params.id) where.id = request.params.id;
 
       const list = await model.findAll({ where });
 
-      await* list.map(instance => instance.destroy());
+      await Promise.all(list.map(instance => instance.destroy()));
 
       reply(list.length === 1 ? list[0] : list);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const destroyAll = (server, model) => {
   server.route({
@@ -141,19 +140,18 @@ export const destroyAll = (server, model) => {
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
       const where = parseWhere(request);
 
       const list = await model.findAll({ where });
 
-      await* list.map(instance => instance.destroy());
+      await Promise.all(list.map(instance => instance.destroy()));
 
       reply(list.length === 1 ? list[0] : list);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 export const destroyScope = (server, model) => {
   let scopes = Object.keys(model.options.scopes);
@@ -169,19 +167,19 @@ export const destroyScope = (server, model) => {
 
       let list = await model.scope(request.params.scope).findAll({ include, where });
 
-      await* list.map(instance => instance.destroy());
+      await Promise.all(list.map(instance => instance.destroy()));
 
       reply(list);
     },
     config: _.defaultsDeep({
       validate: {
         params: joi.object().keys({
-          scope: joi.string().valid(...scopes)
-        })
-      }
-    }, defaultConfig)
+          scope: joi.string().valid(...scopes),
+        }),
+      },
+    }, defaultConfig),
   });
-}
+};
 
 export const update = (server, model) => {
   server.route({
@@ -193,8 +191,8 @@ export const update = (server, model) => {
       const {id} = request.params;
       const instance = await model.findOne({
         where: {
-          id
-        }
+          id,
+        },
       });
 
       if (!instance) return void reply(notFound(`${id} not found.`));
@@ -204,9 +202,9 @@ export const update = (server, model) => {
       reply(instance);
     },
 
-    config: defaultConfig
-  })
-}
+    config: defaultConfig,
+  });
+};
 
 import * as associations from './associations/index';
 export { associations };

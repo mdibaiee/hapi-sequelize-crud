@@ -23,7 +23,7 @@ const register = (server, options = {}, next) => {
 
   server.ext({
     type: 'onRequest',
-    method: onRequest
+    method: onRequest,
   });
 
   for (let modelName of Object.keys(models)) {
@@ -39,26 +39,23 @@ const register = (server, options = {}, next) => {
 
     for (let key of Object.keys(model.associations)) {
       let association = model.associations[key];
-      let { associationType, source, target } = association;
-      // console.dir(association, null, { depth: null });
+      let { source, target } = association;
 
       let sourceName = source.options.name;
-      let targetName = target.options.name;
-
 
       const names = (rev) => {
         const arr =  [{
             plural: sourceName.plural.toLowerCase(),
             singular: sourceName.singular.toLowerCase(),
-            original: sourceName
+            original: sourceName,
           }, {
             plural: association.options.name.plural.toLowerCase(),
             singular: association.options.name.singular.toLowerCase(),
-            original: association.options.name
+            original: association.options.name,
           }];
 
         return rev ? { b: arr[0], a: arr[1] } : { a: arr[0], b: arr[1] };
-      }
+      };
 
       let targetAssociations = target.associations[sourceName.plural] || target.associations[sourceName.singular];
       let sourceType = association.associationType,
@@ -94,10 +91,10 @@ const register = (server, options = {}, next) => {
   }
 
   next();
-}
+};
 
 register.attributes = {
-  pkg: require('../package.json')
-}
+  pkg: require('../package.json'),
+};
 
 export { register };
