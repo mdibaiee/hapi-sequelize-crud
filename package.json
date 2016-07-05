@@ -5,12 +5,14 @@
   "main": "build/index.js",
   "config": {
     "ghooks": {
-      "pre-commit": "npm run lint && grunt"
+      "pre-commit": "npm run lint && npm run build"
     }
   },
   "scripts": {
     "lint": "eslint src test",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "scripty",
+    "watch": "scripty"
   },
   "repository": {
     "git": "https://github.com/mdibaiee/hapi-sequelize-crud"
@@ -21,14 +23,16 @@
   "author": "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)",
   "license": "MIT",
   "devDependencies": {
-    "babel": "5.8.3",
+    "babel-cli": "^6.10.1",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-closure-elimination": "^1.0.6",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
+    "babel-preset-stage-1": "^6.5.0",
     "eslint": "2.10.2",
     "eslint-config-pichak": "1.0.1",
     "ghooks": "1.0.3",
-    "grunt": "0.4.5",
-    "grunt-babel": "5.0.3",
-    "grunt-contrib-clean": "0.7.0",
-    "grunt-contrib-watch": "0.6.1"
+    "scripty": "^1.6.0"
   },
   "dependencies": {
     "babel": "5.8.3",
