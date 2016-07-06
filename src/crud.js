@@ -31,6 +31,8 @@ export const list = (server, model) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
 
+      if (include instanceof Error) return void reply(include);
+
       const list = await model.findAll({
         where, include,
       });
