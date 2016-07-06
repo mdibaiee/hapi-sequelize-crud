@@ -204,7 +204,11 @@ export const update = (server, model) => {
       reply(instance);
     },
 
-    config: defaultConfig,
+    config: _.defaultsDeep({
+      validate: {
+        payload: joi.object().required(),
+      },
+    }, defaultConfig),
   });
 };
 
