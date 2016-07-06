@@ -1,18 +1,30 @@
-import { omit } from 'lodash';
+import { omit, identity } from 'lodash';
 
 export const parseInclude = request => {
   const include = Array.isArray(request.query.include) ? request.query.include
                                                        : [request.query.include];
 
+  const noGetDb = typeof request.getDb !== 'function';
+  const noRequestModels = request.models;
+
+  if (noGetDb && noRequestModels) {
+    return new Error('`request.getDb` or `request.models` are not defined. Be sure to load hapi-sequelize before hapi-sequelize-crud.');
+  }
+
+  const {models} = !noGetDb
+    ? request.getDb()
+    : request
+    ;
+
   return include.map(a => {
-    if (typeof a === 'string') return request.models[a];
+    if (typeof a === 'string') return models[a];
 
     if (a && typeof a.model === 'string' && a.model.length) {
-      a.model = request.models[a.model];
+      a.model = models[a.model];
     }
 
     return a;
-  }).filter(a => a);
+  }).filter(identity);
 };
 
 export const parseWhere = request => {
