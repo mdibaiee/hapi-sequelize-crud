@@ -8,10 +8,11 @@ export const parseInclude = request => {
   const noRequestModels = !request.models;
 
   if (noGetDb && noRequestModels) {
-    return new Error('`request.getDb` or `request.models` are not defined. Be sure to load hapi-sequelize before hapi-sequelize-crud.');
+    return new Error('`request.getDb` or `request.models` are not defined.'
+                   + 'Be sure to load hapi-sequelize before hapi-sequelize-crud.');
   }
 
-  const {models} = noGetDb ? request : request.getDb();
+  const { models } = noGetDb ? request : request.getDb();
 
   return include.map(a => {
     if (typeof a === 'string') return models[a];

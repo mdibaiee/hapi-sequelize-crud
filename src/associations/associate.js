@@ -14,13 +14,13 @@ export default (server, a, b, names, options) => {
 
     @error
     async handler(request, reply) {
-      let instanceb = await b.findOne({
+      const instanceb = await b.findOne({
         where: {
           id: request.params.bid,
         },
       });
 
-      let instancea = await a.findOne({
+      const instancea = await a.findOne({
         where: {
           id: request.params.aid,
         },

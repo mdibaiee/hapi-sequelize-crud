@@ -73,7 +73,7 @@ export const list = (server, a, b, names) => {
 };
 
 export const scope = (server, a, b, names) => {
-  let scopes = Object.keys(b.options.scopes);
+  const scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'GET',
@@ -112,7 +112,7 @@ export const scope = (server, a, b, names) => {
 };
 
 export const scopeScope = (server, a, b, names) => {
-  let scopes = {
+  const scopes = {
     a: Object.keys(a.options.scopes),
     b: Object.keys(b.options.scopes),
   };
@@ -126,7 +126,7 @@ export const scopeScope = (server, a, b, names) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
 
-      let list = await b.scope(request.params.scopeb).findAll({
+      const list = await b.scope(request.params.scopeb).findAll({
         where,
         include: include.concat({
           model: a.scope(request.params.scopea),
@@ -175,7 +175,7 @@ export const destroy = (server, a, b, names) => {
 };
 
 export const destroyScope = (server, a, b, names) => {
-  let scopes = Object.keys(b.options.scopes);
+  const scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'DELETE',

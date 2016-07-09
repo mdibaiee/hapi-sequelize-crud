@@ -53,7 +53,7 @@ export const get = (server, model) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
-      const {id} = request.params;
+      const { id } = request.params;
       if (id) where.id = id;
 
       const instance = await model.findOne({ where, include });
@@ -73,7 +73,7 @@ export const get = (server, model) => {
 };
 
 export const scope = (server, model) => {
-  let scopes = Object.keys(model.options.scopes);
+  const scopes = Object.keys(model.options.scopes);
 
   server.route({
     method: 'GET',
@@ -156,7 +156,7 @@ export const destroyAll = (server, model) => {
 };
 
 export const destroyScope = (server, model) => {
-  let scopes = Object.keys(model.options.scopes);
+  const scopes = Object.keys(model.options.scopes);
 
   server.route({
     method: 'DELETE',
@@ -167,7 +167,7 @@ export const destroyScope = (server, model) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
 
-      let list = await model.scope(request.params.scope).findAll({ include, where });
+      const list = await model.scope(request.params.scope).findAll({ include, where });
 
       await Promise.all(list.map(instance => instance.destroy()));
 
@@ -190,7 +190,7 @@ export const update = (server, model) => {
 
     @error
     async handler(request, reply) {
-      const {id} = request.params;
+      const { id } = request.params;
       const instance = await model.findOne({
         where: {
           id,
