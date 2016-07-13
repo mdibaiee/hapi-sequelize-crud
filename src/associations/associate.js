@@ -16,13 +16,13 @@ export default (server, a, b, names, options) => {
     async handler(request, reply) {
       const instanceb = await b.findOne({
         where: {
-          id: request.params.bid,
+          [b.primaryKeyField]: request.params.bid,
         },
       });
 
       const instancea = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 

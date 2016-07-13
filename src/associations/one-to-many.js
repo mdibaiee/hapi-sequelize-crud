@@ -28,18 +28,23 @@ export const get = (server, a, b, names) => {
     async handler(request, reply) {
       const include = parseInclude(request);
 
-      const base = a.findOne({
+      const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 
       const method = getMethod(base, names.b);
+
       const list = await method({ where: {
-        id: request.params.bid,
+        [b.primaryKeyField]: request.params.bid,
       }, include });
 
-      reply(list);
+      if (Array.isArray(list)) {
+        reply(list[0]);
+      } else {
+        reply(list);
+      }
     },
 
     config: defaultConfig,
@@ -58,7 +63,7 @@ export const list = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 
@@ -86,7 +91,7 @@ export const scope = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 
@@ -159,7 +164,7 @@ export const destroy = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 
@@ -188,7 +193,7 @@ export const destroyScope = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primarykeyField]: request.params.aid,
         },
       });
 
@@ -228,7 +233,7 @@ export const update = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
 

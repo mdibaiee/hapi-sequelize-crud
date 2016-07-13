@@ -54,7 +54,7 @@ export const get = (server, model) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
       const { id } = request.params;
-      if (id) where.id = id;
+      if (id) where[model.primaryKeyField] = id;
 
       const instance = await model.findOne({ where, include });
 
@@ -122,7 +122,7 @@ export const destroy = (server, model) => {
     @error
     async handler(request, reply) {
       const where = parseWhere(request);
-      if (request.params.id) where.id = request.params.id;
+      if (request.params.id) where[model.primaryKeyField] = request.params.id;
 
       const list = await model.findAll({ where });
 

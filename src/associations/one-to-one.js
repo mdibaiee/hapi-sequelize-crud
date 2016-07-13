@@ -26,7 +26,7 @@ export const get = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
       const method = getMethod(base, names.b, false);
@@ -53,7 +53,7 @@ export const create = (server, a, b, names) => {
     async handler(request, reply) {
       const base = await a.findOne({
         where: {
-          id: request.params.id,
+          [a.primaryKeyField]: request.params.id,
         },
       });
 
@@ -79,9 +79,11 @@ export const destroy = (server, a, b, names) => {
 
       const base = await a.findOne({
         where: {
-          id: request.params.aid,
+          [a.primaryKeyField]: request.params.aid,
         },
       });
+
+      where[b.primaryKeyField] = request.params.bid;
 
       const method = getMethod(base, names.b, false, 'get');
       const instance = await method({ where, include });
@@ -109,6 +111,8 @@ export const update = (server, a, b, names) => {
           id: request.params.aid,
         },
       });
+
+      where[b.primaryKeyField] = request.params.bid;
 
       const method = getMethod(base, names.b, false);
 
