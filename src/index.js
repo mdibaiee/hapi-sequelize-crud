@@ -9,7 +9,8 @@ import qs from 'qs';
 const register = (server, options = {}, next) => {
   options.prefix = options.prefix || '';
 
-  const db = server.plugins['hapi-sequelize'].db;
+  const name = options.name || 'db';
+  const db = server.plugins['hapi-sequelize'][name];
   const models = db.sequelize.models;
 
   const onRequest = function (request, reply) {
