@@ -4,9 +4,9 @@ import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
 import { notFound } from 'boom';
 
-const createAll = ({server, model, prefix, config}) => {
+const createAll = ({ server, model, prefix, config }) => {
   Object.keys(methods).forEach((method) => {
-    methods[method]({server, model, prefix, config});
+    methods[method]({ server, model, prefix, config });
   });
 };
 
@@ -28,42 +28,41 @@ models: {
 
 */
 
-export default (server, model, {prefix, defaultConfig: config, models: permissions}) => {
+export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
+  const permissionsIsArray = Array.isArray(permissions);
 
   if (!permissions) {
-    createAll({server, model, prefix, config});
-  }
-  else if (Array.isArray(permissions) && permissions.includes(modelName)) {
-    createAll({server, model, prefix, config});
-  }
-  else if (_.isPlainObject(permissions)) {
-    const permittedModels = Object.keys(permissions);
+    createAll({ server, model, prefix, config });
+  } else if (permissionsIsArray && permissions.includes(modelName)) {
+    createAll({ server, model, prefix, config });
+  } else if (permissionsIsArray) {
+    const permissionOptions = permissions.filter((permission) => {
+      return permission.model === modelName;
+    });
 
-    if (permissions[modelName] === true) {
-      createAll({server, model, prefix, config});
-    }
-    else if (permittedModels.includes(modelName)) {
-      if (Array.isArray(permissions[modelName])) {
-        permissions[modelName].forEach((method) => {
-          methods[method]({server, model, prefix, config});
-        });
-      }
-      else if (_.isPlainObject(permissions[modelName])) {
-        permissions[modelName].methods.forEach((method) => {
-          methods[method]({
-            server,
-            model,
-            prefix,
-            config: permissions[modelName].config || config,
+    permissionOptions.forEach((permissionOption) => {
+      if (_.isPlainObject(permissionOption)) {
+        const permissionConfig = permissionOption.config || config;
+
+        if (permissionOption.methods) {
+          permissionOption.methods.forEach((method) => {
+            methods[method]({
+              server,
+              model,
+              prefix,
+              config: permissionConfig,
+            });
           });
-        });
+        } else {
+          createAll({ server, model, prefix, config: permissionConfig });
+        }
       }
-    }
+    });
   }
 };
 
-export const list = ({server, model, prefix, config}) => {
+export const list = ({ server, model, prefix, config }) => {
   server.route({
     method: 'GET',
     path: `${prefix}/${model._plural}`,
@@ -86,7 +85,7 @@ export const list = ({server, model, prefix, config}) => {
   });
 };
 
-export const get = ({server, model, prefix, config}) => {
+export const get = ({ server, model, prefix, config }) => {
   server.route({
     method: 'GET',
     path: `${prefix}/${model._singular}/{id?}`,
@@ -114,7 +113,7 @@ export const get = ({server, model, prefix, config}) => {
   });
 };
 
-export const scope = ({server, model, prefix, config}) => {
+export const scope = ({ server, model, prefix, config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
@@ -140,7 +139,7 @@ export const scope = ({server, model, prefix, config}) => {
   });
 };
 
-export const create = ({server, model, prefix, config}) => {
+export const create = ({ server, model, prefix, config }) => {
   server.route({
     method: 'POST',
     path: `${prefix}/${model._singular}`,
@@ -156,7 +155,7 @@ export const create = ({server, model, prefix, config}) => {
   });
 };
 
-export const destroy = ({server, model, prefix, config}) => {
+export const destroy = ({ server, model, prefix, config }) => {
   server.route({
     method: 'DELETE',
     path: `${prefix}/${model._singular}/{id?}`,
@@ -177,7 +176,7 @@ export const destroy = ({server, model, prefix, config}) => {
   });
 };
 
-export const destroyAll = ({server, model, prefix, config}) => {
+export const destroyAll = ({ server, model, prefix, config }) => {
   server.route({
     method: 'DELETE',
     path: `${prefix}/${model._plural}`,
@@ -197,7 +196,7 @@ export const destroyAll = ({server, model, prefix, config}) => {
   });
 };
 
-export const destroyScope = ({server, model, prefix, config}) => {
+export const destroyScope = ({ server, model, prefix, config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
@@ -225,7 +224,7 @@ export const destroyScope = ({server, model, prefix, config}) => {
   });
 };
 
-export const update = ({server, model, prefix, config}) => {
+export const update = ({ server, model, prefix, config }) => {
   server.route({
     method: 'PUT',
     path: `${prefix}/${model._singular}/{id}`,
