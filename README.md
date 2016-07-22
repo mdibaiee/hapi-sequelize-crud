@@ -29,10 +29,32 @@ await register({
   options: {
     prefix: '/v1',
     name: 'db', // the same name you used for configuring `hapi-sequelize` (options.name)
-    defaultConfig: { ... } // passed as `config` to all routes created
+    defaultConfig: { ... }, // passed as `config` to all routes created
+    models: ['cat', 'dog'] // only the cat and dog models will have routes created
+    // or
+    models: {
+      // possible methods: list, get, scope, create, destroy, destroyAll, destroyScope, update
+      cat: ['get', 'list'], // the cat model only has get and list methods enabled
+      dog: true, // the dog model has all methods enabled
+      bat: {
+        methods: ['list'],
+        config: { ... } // if provided, overrides the default config
+      }
+    }
   }
 });
 ```
+
+### Methods
+* list: get all rows in a table
+* get: get a single row
+* scope: reference a [sequelize scope](http://docs.sequelizejs.com/en/latest/api/model/#scopeoptions-model)
+* create: create a new row
+* destroy: delete a row
+* destroyAll: delete all models in the table
+* destroyScope: use a [sequelize scope](http://docs.sequelizejs.com/en/latest/api/model/#scopeoptions-model) to find rows, then delete them
+* update: update a row
+
 
 Please note that you should register `hapi-sequelize-crud` after defining your
 associations.
