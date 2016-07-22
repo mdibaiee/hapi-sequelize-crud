@@ -3,25 +3,66 @@ import error from './error';
 import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
 import { notFound } from 'boom';
+import * as associations from './associations/index';
 
-let prefix;
-let defaultConfig;
-
-export default (server, model, options) => {
-  prefix = options.prefix;
-  defaultConfig = options.defaultConfig;
-
-  list(server, model);
-  get(server, model);
-  scope(server, model);
-  create(server, model);
-  destroy(server, model);
-  destroyAll(server, model);
-  destroyScope(server, model);
-  update(server, model);
+const createAll = ({ server, model, prefix, config }) => {
+  Object.keys(methods).forEach((method) => {
+    methods[method]({ server, model, prefix, config });
+  });
 };
 
-export const list = (server, model) => {
+export { associations };
+
+/*
+The `models` option, becomes `permissions`, and can look like:
+
+```
+models: ['cat', 'dog']
+```
+
+or
+
+```
+models: {
+  cat: ['list', 'get']
+  , dog: true // all
+}
+```
+
+*/
+
+export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
+  const modelName = model._singular;
+
+  if (!permissions) {
+    createAll({ server, model, prefix, config });
+  } else if (Array.isArray(permissions) && permissions.includes(modelName)) {
+    createAll({ server, model, prefix, config });
+  } else if (_.isPlainObject(permissions)) {
+    const permittedModels = Object.keys(permissions);
+
+    if (permissions[modelName] === true) {
+      createAll({ server, model, prefix, config });
+    } else if (permittedModels.includes(modelName)) {
+      if (Array.isArray(permissions[modelName])) {
+        permissions[modelName].forEach((method) => {
+          methods[method]({ server, model, prefix, config });
+        });
+      } else if (_.isPlainObject(permissions[modelName])) {
+        permissions[modelName].methods.forEach((method) => {
+          methods[method]({
+            server,
+            model,
+            prefix,
+            config: permissions[modelName].config || config,
+          });
+        });
+      }
+    }
+  }
+};
+
+export const list = ({ server, model, prefix, config }) => {
   server.route({
     method: 'GET',
     path: `${prefix}/${model._plural}`,
@@ -40,11 +81,11 @@ export const list = (server, model) => {
       reply(list);
     },
 
-    config: defaultConfig,
+    config,
   });
 };
 
-export const get = (server, model) => {
+export const get = ({ server, model, prefix, config }) => {
   server.route({
     method: 'GET',
     path: `${prefix}/${model._singular}/{id?}`,
@@ -68,11 +109,11 @@ export const get = (server, model) => {
           id: joi.any(),
         }),
       },
-    }, defaultConfig),
+    }, config),
   });
 };
 
-export const scope = (server, model) => {
+export const scope = ({ server, model, prefix, config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
@@ -94,11 +135,11 @@ export const scope = (server, model) => {
           scope: joi.string().valid(...scopes),
         }),
       },
-    }, defaultConfig),
+    }, config),
   });
 };
 
-export const create = (server, model) => {
+export const create = ({ server, model, prefix, config }) => {
   server.route({
     method: 'POST',
     path: `${prefix}/${model._singular}`,
@@ -110,11 +151,11 @@ export const create = (server, model) => {
       reply(instance);
     },
 
-    config: defaultConfig,
+    config,
   });
 };
 
-export const destroy = (server, model) => {
+export const destroy = ({ server, model, prefix, config }) => {
   server.route({
     method: 'DELETE',
     path: `${prefix}/${model._singular}/{id?}`,
@@ -131,11 +172,11 @@ export const destroy = (server, model) => {
       reply(list.length === 1 ? list[0] : list);
     },
 
-    config: defaultConfig,
+    config,
   });
 };
 
-export const destroyAll = (server, model) => {
+export const destroyAll = ({ server, model, prefix, config }) => {
   server.route({
     method: 'DELETE',
     path: `${prefix}/${model._plural}`,
@@ -151,11 +192,11 @@ export const destroyAll = (server, model) => {
       reply(list.length === 1 ? list[0] : list);
     },
 
-    config: defaultConfig,
+    config,
   });
 };
 
-export const destroyScope = (server, model) => {
+export const destroyScope = ({ server, model, prefix, config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
@@ -179,11 +220,11 @@ export const destroyScope = (server, model) => {
           scope: joi.string().valid(...scopes),
         }),
       },
-    }, defaultConfig),
+    }, config),
   });
 };
 
-export const update = (server, model) => {
+export const update = ({ server, model, prefix, config }) => {
   server.route({
     method: 'PUT',
     path: `${prefix}/${model._singular}/{id}`,
@@ -208,9 +249,10 @@ export const update = (server, model) => {
       validate: {
         payload: joi.object().required(),
       },
-    }, defaultConfig),
+    }, config),
   });
 };
 
-import * as associations from './associations/index';
-export { associations };
+const methods = {
+  list, get, scope, create, destroy, destroyAll, destroyScope, update,
+};
