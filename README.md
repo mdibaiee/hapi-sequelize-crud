@@ -36,15 +36,19 @@ await register({
     // models defined for them. e.g.
     models: ['cat', 'dog'] // only the cat and dog models will have routes created
     // or
-    models: {
+    models: [
       // possible methods: list, get, scope, create, destroy, destroyAll, destroyScope, update
-      cat: ['get', 'list'], // the cat model only has get and list methods enabled
-      dog: true, // the dog model has all methods enabled
-      bat: {
-        methods: ['list'],
-        config: { ... } // if provided, overrides the default config
-      }
-    }
+      // the cat model only has get and list methods enabled
+      {model: 'cat', methods: ['get', 'list']},
+      // the dog model has all methods enabled
+      {model: 'dog'},
+      // the cow model also has all methods enabled
+      'cow',
+      // the bat model as a custom config for the list method, but uses the default config for create.
+      // `config` if provided, overrides the default config
+      {model: 'bat', methods: ['list'], config: { ... }},
+      {model: 'bat', methods: ['create']}
+    ]
   }
 });
 ```

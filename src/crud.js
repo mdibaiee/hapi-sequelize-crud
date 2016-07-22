@@ -36,29 +36,33 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
 
   if (!permissions) {
     createAll({ server, model, prefix, config });
-  } else if (Array.isArray(permissions) && permissions.includes(modelName)) {
+  } else if (!Array.isArray(permissions)) {
+    throw new Error('hapi-sequelize-crud: `models` property must be an array');
+  } else if (permissions.includes(modelName)) {
     createAll({ server, model, prefix, config });
-  } else if (_.isPlainObject(permissions)) {
-    const permittedModels = Object.keys(permissions);
+  } else {
+    const permissionOptions = permissions.filter((permission) => {
+      return permission.model === modelName;
+    });
 
-    if (permissions[modelName] === true) {
-      createAll({ server, model, prefix, config });
-    } else if (permittedModels.includes(modelName)) {
-      if (Array.isArray(permissions[modelName])) {
-        permissions[modelName].forEach((method) => {
-          methods[method]({ server, model, prefix, config });
-        });
-      } else if (_.isPlainObject(permissions[modelName])) {
-        permissions[modelName].methods.forEach((method) => {
-          methods[method]({
-            server,
-            model,
-            prefix,
-            config: permissions[modelName].config || config,
+    permissionOptions.forEach((permissionOption) => {
+      if (_.isPlainObject(permissionOption)) {
+        const permissionConfig = permissionOption.config || config;
+
+        if (permissionOption.methods) {
+          permissionOption.methods.forEach((method) => {
+            methods[method]({
+              server,
+              model,
+              prefix,
+              config: permissionConfig,
+            });
           });
-        });
+        } else {
+          createAll({ server, model, prefix, config: permissionConfig });
+        }
       }
-    }
+    });
   }
 };
 
