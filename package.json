@@ -35,7 +35,6 @@
     "scripty": "^1.6.0"
   },
   "dependencies": {
-    "babel": "5.8.3",
     "boom": "^3.2.2",
     "joi": "7.2.1",
     "lodash": "4.0.0"
