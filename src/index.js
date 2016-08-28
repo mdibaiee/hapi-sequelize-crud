@@ -1,5 +1,5 @@
 if (!global._babelPolyfill) {
-  require('babel/polyfill');
+  require('babel-polyfill');
 }
 
 import crud, { associations } from './crud';
