@@ -38,5 +38,8 @@
     "boom": "^3.2.2",
     "joi": "7.2.1",
     "lodash": "4.0.0"
+  },
+  "optionalDependencies": {
+    "babel-polyfill": "^6.13.0"
   }
 }

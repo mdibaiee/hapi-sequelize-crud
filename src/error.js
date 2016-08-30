@@ -1,8 +1,4 @@
-<<<<<<< b18479e02e3d47da4e40369a8132e07125eb96a3
 import Boom from 'boom';
-=======
-import { wrap } from 'boom';
->>>>>>> whatever
 
 export default (target, key, descriptor) => {
   const fn = descriptor.value;
@@ -11,7 +7,6 @@ export default (target, key, descriptor) => {
     try {
       await fn(request, reply);
     } catch (e) {
-<<<<<<< b18479e02e3d47da4e40369a8132e07125eb96a3
       if (e.original) {
         const { code, detail } = e.original;
 
@@ -50,23 +45,6 @@ export default (target, key, descriptor) => {
         reply(err);
       } else {
         reply(e);
-=======
-      const { code, detail } = e.original;
-
-      // pg error codes https://www.postgresql.org/docs/9.5/static/errcodes-appendix.html
-      if (code && (code.startsWith('22') || code.startsWith('23'))) {
-        const error = wrap(e, 406);
-
-        // detail tends to be more specific information. So, if we have it, use.
-        if (detail) {
-          error.message += `: ${detail}`;
-          error.reformat();
-        }
-
-        reply(error);
-      } else {
-        reply(wrap(e));
->>>>>>> whatever
       }
     }
   };
