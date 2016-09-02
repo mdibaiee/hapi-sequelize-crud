@@ -79,7 +79,7 @@ export const list = ({ server, model, prefix, config }) => {
       if (include instanceof Error) return void reply(include);
 
       const list = await model.findAll({
-        where, include,
+        ...where, include,
       });
 
       reply(list);
@@ -101,7 +101,7 @@ export const get = ({ server, model, prefix, config }) => {
       const { id } = request.params;
       if (id) where[model.primaryKeyField] = id;
 
-      const instance = await model.findOne({ where, include });
+      const instance = await model.findOne({ ...where, include });
 
       if (!instance) return void reply(notFound(`${id} not found.`));
 
