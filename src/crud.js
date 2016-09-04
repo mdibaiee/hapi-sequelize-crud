@@ -110,13 +110,13 @@ export const get = ({ server, model, prefix = '/', config }) => {
 
       reply(instance);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
         params: joi.object().keys({
           id: joi.any(),
         }),
       },
-    }, config),
+    }),
   });
 };
 
@@ -138,13 +138,13 @@ export const scope = ({ server, model, prefix = '/', config }) => {
 
       reply(list);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
         }),
       },
-    }, config),
+    }),
   });
 };
 
@@ -225,13 +225,13 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
 
       reply(list);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
         params: joi.object().keys({
           scope: joi.string().valid(...scopes),
         }),
       },
-    }, config),
+    }),
   });
 };
 
@@ -256,11 +256,11 @@ export const update = ({ server, model, prefix = '/', config }) => {
       reply(instance);
     },
 
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
         payload: joi.object().required(),
       },
-    }, config),
+    }),
   });
 };
 
