@@ -257,9 +257,9 @@ export const get = ({ server, model, prefix = '/', config }) => {
     },
     config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           id: joi.any(),
-        }),
+        },
       },
     }),
   });
@@ -285,9 +285,9 @@ export const scope = ({ server, model, prefix = '/', config }) => {
     },
     config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           scope: joi.string().valid(...scopes),
-        }),
+        },
       },
     }),
   });
@@ -372,9 +372,9 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
     },
     config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           scope: joi.string().valid(...scopes),
-        }),
+        },
       },
     }),
   });
@@ -400,9 +400,9 @@ export const update = ({ server, model, prefix = '/', config }) => {
     config: _.defaultsDeep(config, {
       validate: {
         payload: joi.object().required(),
-        params: joi.object().keys({
+        params: {
           id: joi.any(),
-        }),
+        },
       },
     }),
   });
