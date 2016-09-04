@@ -243,11 +243,7 @@ export const update = ({ server, model, prefix = '/', config }) => {
     @error
     async handler(request, reply) {
       const { id } = request.params;
-      const instance = await model.findOne({
-        where: {
-          id,
-        },
-      });
+      const instance = await model.findById(id);
 
       if (!instance) return void reply(notFound(`${id} not found.`));
 
