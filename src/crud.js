@@ -102,6 +102,8 @@ export const get = ({ server, model, prefix = '/', config }) => {
       const { id } = request.params;
       if (id) where[model.primaryKeyField] = id;
 
+      if (include instanceof Error) return void reply(include);
+
       const instance = await model.findOne({ where, include });
 
       if (!instance) return void reply(notFound(`${id} not found.`));
@@ -129,6 +131,8 @@ export const scope = ({ server, model, prefix = '/', config }) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+
+      if (include instanceof Error) return void reply(include);
 
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
@@ -212,6 +216,8 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+
+      if (include instanceof Error) return void reply(include);
 
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
