@@ -260,6 +260,9 @@ export const update = ({ server, model, prefix = '/', config }) => {
     config: _.defaultsDeep(config, {
       validate: {
         payload: joi.object().required(),
+        params: joi.object().keys({
+          id: joi.any(),
+        }),
       },
     }),
   });
