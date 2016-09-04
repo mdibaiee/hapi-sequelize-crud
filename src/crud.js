@@ -35,12 +35,17 @@ models: {
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
 
+  // if we don't have any permissions set, just create all the methods
   if (!permissions) {
     createAll({ server, model, prefix, config });
+  // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
     throw new Error('hapi-sequelize-crud: `models` property must be an array');
+  // if permissions are set, but the only thing we've got is a model name, there
+  // are no permissions to be set, so just create all methods and move on
   } else if (permissions.includes(modelName)) {
     createAll({ server, model, prefix, config });
+  // if we've gotten here, we have complex permissions and need to set them
   } else {
     const permissionOptions = permissions.filter((permission) => {
       return permission.model === modelName;
