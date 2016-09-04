@@ -67,10 +67,50 @@ await register({
 * **destroyScope**: use a [sequelize scope](http://docs.sequelizejs.com/en/latest/api/model/#scopeoptions-model) to find rows, then delete them
 * **update**: update a row
 
+## `where` queries
+It's easy to restrict your requests using Sequelize's `where` query option. Just pass a query parameter.
 
+```js
+// returns only teams that have a `city` property of "windsor"
+// GET /team?city=windsor
 
+// results in the Sequelize query:
+Team.findOne({ where: { city: 'windsor' }})
+```
 
-##What do I get
+You can also do more complex queries by setting the value of a key to JSON.
+
+```js
+// returns only teams that have a `address.city` property of "windsor"
+// GET /team?city={"address": "windsor"}
+// or
+// GET /team?city[address]=windsor
+
+// results in the Sequelize query:
+Team.findOne({ where: { address: { city: 'windsor' }}})
+```
+
+## `include` queries
+Getting related models is easy, just use a query parameter `include`.
+
+```js
+// returns all teams with their related City model
+// GET /teams?include=City
+
+// results in a Sequelize query:
+Team.findAll({include: City})
+```
+
+If you want to get multiple related models, just pass multiple `include` parameters.
+```js
+// returns all teams with their related City and Uniform models
+// GET /teams?include=City&include=Uniform
+
+// results in a Sequelize query:
+Team.findAll({include: [City, Uniform]})
+```
+
+## Full list of methods
 
 Let's say you have a `many-to-many` association like this:
 
@@ -85,8 +125,9 @@ You get these:
 # get an array of records
 GET /team/{id}/roles
 GET /role/{id}/teams
-# might also append query parameters to search for
+# might also append `where` query parameters to search for
 GET /role/{id}/teams?members=5
+GET /role/{id}/teams?city=healdsburg
 
 # you might also use scopes
 GET /teams/{scope}/roles/{scope}
