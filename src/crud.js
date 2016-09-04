@@ -6,9 +6,112 @@ import { parseInclude, parseWhere } from './utils';
 import { notFound } from 'boom';
 import * as associations from './associations/index';
 
-const createAll = ({ server, model, prefix, config }) => {
+const sequelizeOperators = {
+  $and: joi.any(),
+  $or: joi.any(),
+  $gt: joi.any(),
+  $gte: joi.any(),
+  $lt: joi.any(),
+  $lte: joi.any(),
+  $ne: joi.any(),
+  $eq: joi.any(),
+  $not: joi.any(),
+  $between: joi.any(),
+  $notBetween: joi.any(),
+  $in: joi.any(),
+  $notIn: joi.any(),
+  $like: joi.any(),
+  $notLike: joi.any(),
+  $iLike: joi.any(),
+  $notILike: joi.any(),
+  $overlap: joi.any(),
+  $contains: joi.any(),
+  $contained: joi.any(),
+  $any: joi.any(),
+  $col: joi.any(),
+};
+
+const whereMethods = [
+  'list',
+  'get',
+  'scope',
+  'destroy',
+  'destoryScope',
+  'destroyAll',
+];
+
+const includeMethods = [
+  'list',
+  'get',
+  'scope',
+  'destoryScope',
+];
+
+const payloadMethods = [
+  'create',
+  'update',
+];
+
+const getConfigForMethod = ({ method, attributeValidation, associationValidation, config }) => {
+  const hasWhere = whereMethods.includes(method);
+  const hasInclude = includeMethods.includes(method);
+  const hasPayload = payloadMethods.includes(method);
+  const methodConfig = { ...config };
+
+  if (hasWhere) {
+    _.defaultsDeep(methodConfig, {
+      validate: {
+        query: {
+          ...attributeValidation,
+          ...sequelizeOperators,
+        },
+      },
+    });
+  }
+
+  if (hasInclude) {
+    _.defaultsDeep(methodConfig, {
+      validate: {
+        query: {
+          ...associationValidation,
+        },
+      },
+    });
+  }
+
+  if (hasPayload) {
+    _.defaultsDeep(methodConfig, {
+      validate: {
+        payload: {
+          ...attributeValidation,
+        },
+      },
+    });
+  }
+
+  return methodConfig;
+};
+
+const createAll = ({
+  server,
+  model,
+  prefix,
+  config,
+  attributeValidation,
+  associationValidation,
+}) => {
   Object.keys(methods).forEach((method) => {
-    methods[method]({ server, model, prefix, config });
+    methods[method]({
+      server,
+      model,
+      prefix,
+      config: getConfigForMethod({
+        method,
+        attributeValidation,
+        associationValidation,
+        config,
+      }),
+    });
   });
 };
 
@@ -34,17 +137,42 @@ models: {
 
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
+  const modelAttributes = Object.keys(model.attributes);
+  const modelAssociations = Object.keys(model.associations);
+
+  const attributeValidation = modelAttributes.reduce((params, attribute) => {
+    params[attribute] = joi.any();
+    return params;
+  }, {});
+
+  const associationValidation = {
+    include: joi.array().items(joi.string().valid(...modelAssociations)),
+  };
 
   // if we don't have any permissions set, just create all the methods
   if (!permissions) {
-    createAll({ server, model, prefix, config });
+    createAll({
+      server,
+      model,
+      prefix,
+      config,
+      attributeValidation,
+      associationValidation,
+    });
   // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
     throw new Error('hapi-sequelize-crud: `models` property must be an array');
   // if permissions are set, but the only thing we've got is a model name, there
   // are no permissions to be set, so just create all methods and move on
   } else if (permissions.includes(modelName)) {
-    createAll({ server, model, prefix, config });
+    createAll({
+      server,
+      model,
+      prefix,
+      config,
+      attributeValidation,
+      associationValidation,
+    });
   // if we've gotten here, we have complex permissions and need to set them
   } else {
     const permissionOptions = permissions.filter((permission) => {
@@ -61,11 +189,23 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
               server,
               model,
               prefix,
-              config: permissionConfig,
+              config: getConfigForMethod({
+                method,
+                attributeValidation,
+                associationValidation,
+                config: permissionConfig,
+              }),
             });
           });
         } else {
-          createAll({ server, model, prefix, config: permissionConfig });
+          createAll({
+            server,
+            model,
+            prefix,
+            attributeValidation,
+            associationValidation,
+            config: permissionConfig,
+          });
         }
       }
     });
