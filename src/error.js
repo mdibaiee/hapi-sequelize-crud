@@ -13,7 +13,15 @@ export default (target, key, descriptor) => {
 
         // pg error codes https://www.postgresql.org/docs/9.5/static/errcodes-appendix.html
         if (code && (code.startsWith('22') || code.startsWith('23'))) {
-          const error = Boom.wrap(e, 406);
+          error = Boom.wrap(e, 406);
+        } else if (code && (code.startsWith('42'))) {
+          error = Boom.wrap(e, 422);
+        // TODO: we could get better at parse postgres error codes
+        } else {
+          // use a 502 error code since the issue is upstream with postgres, not
+          // this server
+          error = Boom.wrap(e, 502);
+        }
 
         // detail tends to be more specific information. So, if we have it, use.
         if (detail) {
