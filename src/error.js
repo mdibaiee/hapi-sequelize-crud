@@ -14,14 +14,15 @@ export default (target, key, descriptor) => {
         if (code && (code.startsWith('22') || code.startsWith('23'))) {
           const error = Boom.wrap(e, 406);
 
-          // detail tends to be more specific information. So, if we have it, use.
-          if (detail) {
-            error.message += `: ${detail}`;
-            error.reformat();
-          }
-
-          reply(error);
+        // detail tends to be more specific information. So, if we have it, use.
+        if (detail) {
+          error.message += `: ${detail}`;
+          error.reformat();
         }
+
+        }
+
+        reply(error);
       } else if (!e.isBoom) {
         const { message } = e;
         let err;
