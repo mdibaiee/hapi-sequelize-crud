@@ -8,20 +8,34 @@ export default (target, key, descriptor) => {
       await fn(request, reply);
     } catch (e) {
       if (e.original) {
-        const { code, detail } = e.original;
+        const { code, detail, hint } = e.original;
+        let error;
 
         // pg error codes https://www.postgresql.org/docs/9.5/static/errcodes-appendix.html
         if (code && (code.startsWith('22') || code.startsWith('23'))) {
-          const error = Boom.wrap(e, 406);
-
-          // detail tends to be more specific information. So, if we have it, use.
-          if (detail) {
-            error.message += `: ${detail}`;
-            error.reformat();
-          }
-
-          reply(error);
+          error = Boom.wrap(e, 406);
+        } else if (code && (code.startsWith('42'))) {
+          error = Boom.wrap(e, 422);
+        // TODO: we could get better at parse postgres error codes
+        } else {
+          // use a 502 error code since the issue is upstream with postgres, not
+          // this server
+          error = Boom.wrap(e, 502);
         }
+
+        // detail tends to be more specific information. So, if we have it, use.
+        if (detail) {
+          error.message += `: ${detail}`;
+          error.reformat();
+        }
+
+        // hint might provide useful information about how to fix the problem
+        if (hint) {
+          error.message += ` Hint: ${hint}`;
+          error.reformat();
+        }
+
+        reply(error);
       } else if (!e.isBoom) {
         const { message } = e;
         let err;
