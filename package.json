@@ -41,7 +41,7 @@
     "tap-xunit": "^1.4.0"
   },
   "dependencies": {
-    "boom": "^3.2.2",
+    "boom": "^4.0.0",
     "joi": "7.2.1",
     "lodash": "4.0.0"
   },
