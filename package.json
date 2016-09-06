@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "eslint src",
-    "test": "ava --require babel-register --source='*.test.js'",
+    "test": "ava --require babel-register --source='*.test.js' --tap=${CI-false} | $(if [ -z ${CI:-} ]; then echo 'tail'; else tap-xunit > $CIRCLE_TEST_REPORTS/ava/ava.xml; fi;)",
     "tdd": "ava --require babel-register --source='*.test.js' --watch",
     "build": "scripty",
     "watch": "scripty"
@@ -37,7 +37,8 @@
     "ghooks": "1.0.3",
     "scripty": "^1.6.0",
     "sinon": "^1.17.5",
-    "sinon-bluebird": "^3.0.2"
+    "sinon-bluebird": "^3.0.2",
+    "tap-xunit": "^1.4.0"
   },
   "dependencies": {
     "boom": "^3.2.2",
