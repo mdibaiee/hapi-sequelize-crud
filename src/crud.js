@@ -5,10 +5,28 @@ import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
 import { notFound } from 'boom';
 import * as associations from './associations/index';
+import getConfigForMethod from './get-config-for-method.js';
 
-const createAll = ({ server, model, prefix, config }) => {
+const createAll = ({
+  server,
+  model,
+  prefix,
+  config,
+  attributeValidation,
+  associationValidation,
+}) => {
   Object.keys(methods).forEach((method) => {
-    methods[method]({ server, model, prefix, config });
+    methods[method]({
+      server,
+      model,
+      prefix,
+      config: getConfigForMethod({
+        method,
+        attributeValidation,
+        associationValidation,
+        config,
+      }),
+    });
   });
 };
 
@@ -34,13 +52,43 @@ models: {
 
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
+  const modelAttributes = Object.keys(model.attributes);
+  const modelAssociations = Object.keys(model.associations);
 
+  const attributeValidation = modelAttributes.reduce((params, attribute) => {
+    params[attribute] = joi.any();
+    return params;
+  }, {});
+
+  const associationValidation = {
+    include: joi.array().items(joi.string().valid(...modelAssociations)),
+  };
+
+  // if we don't have any permissions set, just create all the methods
   if (!permissions) {
-    createAll({ server, model, prefix, config });
+    createAll({
+      server,
+      model,
+      prefix,
+      config,
+      attributeValidation,
+      associationValidation,
+    });
+  // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
     throw new Error('hapi-sequelize-crud: `models` property must be an array');
+  // if permissions are set, but the only thing we've got is a model name, there
+  // are no permissions to be set, so just create all methods and move on
   } else if (permissions.includes(modelName)) {
-    createAll({ server, model, prefix, config });
+    createAll({
+      server,
+      model,
+      prefix,
+      config,
+      attributeValidation,
+      associationValidation,
+    });
+  // if we've gotten here, we have complex permissions and need to set them
   } else {
     const permissionOptions = permissions.filter((permission) => {
       return permission.model === modelName;
@@ -56,11 +104,23 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
               server,
               model,
               prefix,
-              config: permissionConfig,
+              config: getConfigForMethod({
+                method,
+                attributeValidation,
+                associationValidation,
+                config: permissionConfig,
+              }),
             });
           });
         } else {
-          createAll({ server, model, prefix, config: permissionConfig });
+          createAll({
+            server,
+            model,
+            prefix,
+            attributeValidation,
+            associationValidation,
+            config: permissionConfig,
+          });
         }
       }
     });
@@ -102,19 +162,21 @@ export const get = ({ server, model, prefix = '/', config }) => {
       const { id } = request.params;
       if (id) where[model.primaryKeyField] = id;
 
+      if (include instanceof Error) return void reply(include);
+
       const instance = await model.findOne({ where, include });
 
       if (!instance) return void reply(notFound(`${id} not found.`));
 
       reply(instance);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           id: joi.any(),
-        }),
+        },
       },
-    }, config),
+    }),
   });
 };
 
@@ -130,17 +192,19 @@ export const scope = ({ server, model, prefix = '/', config }) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
 
+      if (include instanceof Error) return void reply(include);
+
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
       reply(list);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           scope: joi.string().valid(...scopes),
-        }),
+        },
       },
-    }, config),
+    }),
   });
 };
 
@@ -213,19 +277,21 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
       const include = parseInclude(request);
       const where = parseWhere(request);
 
+      if (include instanceof Error) return void reply(include);
+
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
       await Promise.all(list.map(instance => instance.destroy()));
 
       reply(list);
     },
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
-        params: joi.object().keys({
+        params: {
           scope: joi.string().valid(...scopes),
-        }),
+        },
       },
-    }, config),
+    }),
   });
 };
 
@@ -237,11 +303,7 @@ export const update = ({ server, model, prefix = '/', config }) => {
     @error
     async handler(request, reply) {
       const { id } = request.params;
-      const instance = await model.findOne({
-        where: {
-          id,
-        },
-      });
+      const instance = await model.findById(id);
 
       if (!instance) return void reply(notFound(`${id} not found.`));
 
@@ -250,11 +312,14 @@ export const update = ({ server, model, prefix = '/', config }) => {
       reply(instance);
     },
 
-    config: _.defaultsDeep({
+    config: _.defaultsDeep(config, {
       validate: {
         payload: joi.object().required(),
+        params: {
+          id: joi.any(),
+        },
       },
-    }, config),
+    }),
   });
 };
 
