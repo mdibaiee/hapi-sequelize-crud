@@ -9,8 +9,9 @@
     }
   },
   "scripts": {
-    "lint": "eslint src test",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src",
+    "test": "ava --require babel-register --source='*.test.js'",
+    "tdd": "ava --require babel-register --source='*.test.js' --watch",
     "build": "scripty",
     "watch": "scripty"
   },
@@ -23,6 +24,7 @@
   "author": "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)",
   "license": "MIT",
   "devDependencies": {
+    "ava": "^0.16.0",
     "babel-cli": "^6.10.1",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-closure-elimination": "^1.0.6",
@@ -31,8 +33,11 @@
     "babel-preset-stage-1": "^6.5.0",
     "eslint": "^3.4.0",
     "eslint-config-pichak": "1.1.0",
+    "eslint-plugin-ava": "^3.0.0",
     "ghooks": "1.0.3",
-    "scripty": "^1.6.0"
+    "scripty": "^1.6.0",
+    "sinon": "^1.17.5",
+    "sinon-bluebird": "^3.0.2"
   },
   "dependencies": {
     "boom": "^3.2.2",
