@@ -1,4 +1,5 @@
 import { omit, identity } from 'lodash';
+import { notImplemented } from 'boom';
 
 export const parseInclude = request => {
   const include = Array.isArray(request.query.include) ? request.query.include
@@ -8,7 +9,7 @@ export const parseInclude = request => {
   const noRequestModels = !request.models;
 
   if (noGetDb && noRequestModels) {
-    return new Error('`request.getDb` or `request.models` are not defined.'
+    return notImplemented('`request.getDb` or `request.models` are not defined.'
                    + 'Be sure to load hapi-sequelize before hapi-sequelize-crud.');
   }
 
