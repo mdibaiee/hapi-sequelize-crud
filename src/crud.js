@@ -1,4 +1,5 @@
 import joi from 'joi';
+import path from 'path';
 import error from './error';
 import _ from 'lodash';
 import { parseInclude, parseWhere } from './utils';
@@ -66,10 +67,10 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
   }
 };
 
-export const list = ({ server, model, prefix, config }) => {
+export const list = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._plural}`,
+    path: path.join(prefix, model._plural),
 
     @error
     async handler(request, reply) {
@@ -89,10 +90,10 @@ export const list = ({ server, model, prefix, config }) => {
   });
 };
 
-export const get = ({ server, model, prefix, config }) => {
+export const get = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._singular}/{id?}`,
+    path: path.join(prefix, model._singular, '{id?}'),
 
     @error
     async handler(request, reply) {
@@ -117,12 +118,12 @@ export const get = ({ server, model, prefix, config }) => {
   });
 };
 
-export const scope = ({ server, model, prefix, config }) => {
+export const scope = ({ server, model, prefix = '/', config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._plural}/{scope}`,
+    path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
@@ -143,10 +144,10 @@ export const scope = ({ server, model, prefix, config }) => {
   });
 };
 
-export const create = ({ server, model, prefix, config }) => {
+export const create = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${model._singular}`,
+    path: path.join(prefix, model._singular),
 
     @error
     async handler(request, reply) {
@@ -159,10 +160,10 @@ export const create = ({ server, model, prefix, config }) => {
   });
 };
 
-export const destroy = ({ server, model, prefix, config }) => {
+export const destroy = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${model._singular}/{id?}`,
+    path: path.join(prefix, model._singular, '{id?}'),
 
     @error
     async handler(request, reply) {
@@ -180,10 +181,10 @@ export const destroy = ({ server, model, prefix, config }) => {
   });
 };
 
-export const destroyAll = ({ server, model, prefix, config }) => {
+export const destroyAll = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${model._plural}`,
+    path: path.join(prefix, model._plural),
 
     @error
     async handler(request, reply) {
@@ -200,12 +201,12 @@ export const destroyAll = ({ server, model, prefix, config }) => {
   });
 };
 
-export const destroyScope = ({ server, model, prefix, config }) => {
+export const destroyScope = ({ server, model, prefix = '/', config }) => {
   const scopes = Object.keys(model.options.scopes);
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${model._plural}/{scope}`,
+    path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
@@ -228,10 +229,10 @@ export const destroyScope = ({ server, model, prefix, config }) => {
   });
 };
 
-export const update = ({ server, model, prefix, config }) => {
+export const update = ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${model._singular}/{id}`,
+    path: path.join(prefix, model._singular, '{id}'),
 
     @error
     async handler(request, reply) {

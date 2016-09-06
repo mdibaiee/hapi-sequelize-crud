@@ -1,0 +1,9 @@
+machine:
+  node:
+    version: 6.5.0
+
+dependencies:
+  pre:
+    - npm prune
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/ava
