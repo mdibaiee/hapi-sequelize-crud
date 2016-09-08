@@ -14,6 +14,7 @@ const createAll = ({
   config,
   attributeValidation,
   associationValidation,
+  scopes,
 }) => {
   Object.keys(methods).forEach((method) => {
     methods[method]({
@@ -25,6 +26,7 @@ const createAll = ({
         attributeValidation,
         associationValidation,
         config,
+        scopes,
       }),
     });
   });
@@ -64,6 +66,8 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
     include: joi.array().items(joi.string().valid(...modelAssociations)),
   };
 
+  const scopes = Object.keys(model.options.scopes);
+
   // if we don't have any permissions set, just create all the methods
   if (!permissions) {
     createAll({
@@ -73,6 +77,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       config,
       attributeValidation,
       associationValidation,
+      scopes,
     });
   // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
@@ -87,6 +92,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       config,
       attributeValidation,
       associationValidation,
+      scopes,
     });
   // if we've gotten here, we have complex permissions and need to set them
   } else {
@@ -108,6 +114,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
                 method,
                 attributeValidation,
                 associationValidation,
+                scopes,
                 config: permissionConfig,
               }),
             });
@@ -119,6 +126,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
             prefix,
             attributeValidation,
             associationValidation,
+            scopes,
             config: permissionConfig,
           });
         }
@@ -170,19 +178,11 @@ export const get = ({ server, model, prefix = '/', config }) => {
 
       reply(instance);
     },
-    config: _.defaultsDeep(config, {
-      validate: {
-        params: {
-          id: joi.any(),
-        },
-      },
-    }),
+    config,
   });
 };
 
 export const scope = ({ server, model, prefix = '/', config }) => {
-  const scopes = Object.keys(model.options.scopes);
-
   server.route({
     method: 'GET',
     path: path.join(prefix, model._plural, '{scope}'),
@@ -198,13 +198,7 @@ export const scope = ({ server, model, prefix = '/', config }) => {
 
       reply(list);
     },
-    config: _.defaultsDeep(config, {
-      validate: {
-        params: {
-          scope: joi.string().valid(...scopes),
-        },
-      },
-    }),
+    config,
   });
 };
 
@@ -266,8 +260,6 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
 };
 
 export const destroyScope = ({ server, model, prefix = '/', config }) => {
-  const scopes = Object.keys(model.options.scopes);
-
   server.route({
     method: 'DELETE',
     path: path.join(prefix, model._plural, '{scope}'),
@@ -285,13 +277,7 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
 
       reply(list);
     },
-    config: _.defaultsDeep(config, {
-      validate: {
-        params: {
-          scope: joi.string().valid(...scopes),
-        },
-      },
-    }),
+    config,
   });
 };
 
@@ -312,14 +298,7 @@ export const update = ({ server, model, prefix = '/', config }) => {
       reply(instance);
     },
 
-    config: _.defaultsDeep(config, {
-      validate: {
-        payload: joi.object().required(),
-        params: {
-          id: joi.any(),
-        },
-      },
-    }),
+    config,
   });
 };
 
