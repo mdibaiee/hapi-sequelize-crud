@@ -1,6 +1,7 @@
 import test from 'ava';
 import { list } from './crud.js';
 import { stub } from 'sinon';
+import uniqueId from 'lodash/uniqueId.js';
 import 'sinon-bluebird';
 
 const METHODS = {
@@ -13,12 +14,23 @@ test.beforeEach('setup server', (t) => {
   };
 });
 
-test.beforeEach('setup model', (t) => {
-  t.context.model = {
+const makeModel = () => {
+  const id = uniqueId();
+  return {
     findAll: stub(),
     _plural: 'models',
     _singular: 'model',
+    toJSON: () => ({ id }),
+    id,
   };
+};
+
+test.beforeEach('setup model', (t) => {
+  t.context.model = makeModel();
+});
+
+test.beforeEach('setup models', (t) => {
+  t.context.models = [t.context.model, makeModel()];
 });
 
 test.beforeEach('setup request stub', (t) => {
@@ -93,12 +105,11 @@ test('crud#list config', (t) => {
 });
 
 test('crud#list handler', async (t) => {
-  const { server, model, request, reply } = t.context;
-  const allModels = [{ id: 1 }, { id: 2 }];
+  const { server, model, request, reply, models } = t.context;
 
   list({ server, model });
   const { handler } = server.route.args[0][0];
-  model.findAll.resolves(allModels);
+  model.findAll.resolves(models);
 
   try {
     await handler(request, reply);
@@ -115,9 +126,9 @@ test('crud#list handler', async (t) => {
 
   const response = reply.args[0][0];
 
-  t.is(
+  t.deepEqual(
     response,
-    allModels,
+    models.map(({ id }) => ({ id })),
     'responds with the list of models'
   );
 });

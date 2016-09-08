@@ -143,7 +143,7 @@ export const list = ({ server, model, prefix = '/', config }) => {
         where, include,
       });
 
-      reply(list);
+      reply(list.map((item) => item.toJSON()));
     },
 
     config,
@@ -168,7 +168,7 @@ export const get = ({ server, model, prefix = '/', config }) => {
 
       if (!instance) return void reply(notFound(`${id} not found.`));
 
-      reply(instance);
+      reply(instance.toJSON());
     },
     config: _.defaultsDeep(config, {
       validate: {
@@ -196,7 +196,7 @@ export const scope = ({ server, model, prefix = '/', config }) => {
 
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
-      reply(list);
+      reply(list.map((item) => item.toJSON()));
     },
     config: _.defaultsDeep(config, {
       validate: {
@@ -217,7 +217,7 @@ export const create = ({ server, model, prefix = '/', config }) => {
     async handler(request, reply) {
       const instance = await model.create(request.payload);
 
-      reply(instance);
+      reply(instance.toJSON());
     },
 
     config,
@@ -238,7 +238,8 @@ export const destroy = ({ server, model, prefix = '/', config }) => {
 
       await Promise.all(list.map(instance => instance.destroy()));
 
-      reply(list.length === 1 ? list[0] : list);
+      const listAsJSON = list.map((item) => item.toJSON());
+      reply(listAsJSON.length === 1 ? listAsJSON[0] : listAsJSON);
     },
 
     config,
@@ -258,7 +259,8 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
 
       await Promise.all(list.map(instance => instance.destroy()));
 
-      reply(list.length === 1 ? list[0] : list);
+      const listAsJSON = list.map((item) => item.toJSON());
+      reply(listAsJSON.length === 1 ? listAsJSON[0] : listAsJSON);
     },
 
     config,
@@ -283,7 +285,8 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
 
       await Promise.all(list.map(instance => instance.destroy()));
 
-      reply(list);
+      const listAsJSON = list.map((item) => item.toJSON());
+      reply(listAsJSON.length === 1 ? listAsJSON[0] : listAsJSON);
     },
     config: _.defaultsDeep(config, {
       validate: {
@@ -309,7 +312,7 @@ export const update = ({ server, model, prefix = '/', config }) => {
 
       await instance.update(request.payload);
 
-      reply(instance);
+      reply(instance.toJSON());
     },
 
     config: _.defaultsDeep(config, {
