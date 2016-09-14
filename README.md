@@ -9,7 +9,7 @@ This plugin depends on [`hapi-sequelize`](https://github.com/danecando/hapi-sequ
 npm install -S hapi-sequelize-crud
 ```
 
-##Configure
+## Configure
 
 Please note that you should register `hapi-sequelize-crud` after defining your
 associations.
@@ -52,6 +52,13 @@ await register({
       // `config` if provided, overrides the default config
       {model: 'bat', methods: ['list'], config: { ... }},
       {model: 'bat', methods: ['create']}
+      // change the response data
+      {model: 'fly', config: {
+        response: {
+          schema: {id: joi.string()},
+          modify: true
+        }
+      }}
     ]
   }
 });
@@ -108,6 +115,27 @@ If you want to get multiple related models, just pass multiple `include` paramet
 
 // results in a Sequelize query:
 Team.findAll({include: [City, Uniform]})
+```
+
+## Modify the response format
+By default, `hapi-sequelize-crud` routes will respond with the full model. You can modify this using the built-in [hapi settings](http://hapijs.com/tutorials/validation#output).
+
+```js
+await register({
+  register: require('hapi-sequelize-crud'),
+  options: {
+    …
+    {model: 'fly', config: {
+      response: {
+        // setting this schema will restrict the response to only the id
+        schema: { id: joi.string() },
+        // This tells Hapi to restrict the response to the keys specified in `schema`
+        modify: true
+      }
+    }}
+  }
+
+})
 ```
 
 ## Full list of methods
