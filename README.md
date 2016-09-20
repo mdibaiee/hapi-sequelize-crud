@@ -52,8 +52,15 @@ await register({
       // `config` if provided, overrides the default config
       {model: 'bat', methods: ['list'], config: { ... }},
       {model: 'bat', methods: ['create']}
-      // change the response data
       {model: 'fly', config: {
+        // interact with the request before hapi-sequelize-crud does
+        , ext: {
+          onPreHandler: (request, reply) => {
+            if (request.auth.hasAccessToFly) reply.continue()
+            else reply(Boom.unauthorized())
+          }
+        }
+        // change the response data
         response: {
           schema: {id: joi.string()},
           modify: true
@@ -116,6 +123,9 @@ If you want to get multiple related models, just pass multiple `include` paramet
 // results in a Sequelize query:
 Team.findAll({include: [City, Uniform]})
 ```
+
+## Authorization and other hooks
+You can use Hapi's [`ext` option](http://hapijs.com/api#route-options) to interact with the request both before and after this module does. This is useful if you want to enforce authorization, or modify the request before or after this module does. Hapi [has a full list of hooks](http://hapijs.com/api#request-lifecycle) you can use.
 
 ## Modify the response format
 By default, `hapi-sequelize-crud` routes will respond with the full model. You can modify this using the built-in [hapi settings](http://hapijs.com/tutorials/validation#output).
