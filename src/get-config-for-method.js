@@ -66,6 +66,11 @@ export const idParamsMethods = [
   'update',
 ];
 
+export const restrictMethods = [
+  'list',
+  'scope',
+];
+
 export default ({
   method, attributeValidation, associationValidation, scopes = [], config = {},
 }) => {
@@ -74,6 +79,7 @@ export default ({
   const hasPayload = payloadMethods.includes(method);
   const hasScopeParams = scopeParamsMethods.includes(method);
   const hasIdParams = idParamsMethods.includes(method);
+  const hasRestrictMethods = restrictMethods.includes(method);
   // clone the config so we don't modify it on multiple passes.
   let methodConfig = { ...config, validate: { ...config.validate } };
 
@@ -131,6 +137,19 @@ export default ({
     );
 
     methodConfig = set(methodConfig, 'validate.params', params);
+  }
+
+  if (hasRestrictMethods) {
+    const query = concatToJoiObject(joi.object()
+      .keys({
+        limit: joi.number().min(0).integer(),
+        offset: joi.number().min(0).integer(),
+        order: joi.array(),
+      }),
+      get(methodConfig, 'validate.query')
+    );
+
+    methodConfig = set(methodConfig, 'validate.query', query);
   }
 
   return methodConfig;
