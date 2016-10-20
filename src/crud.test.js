@@ -126,6 +126,8 @@ test('crud#list handler', async (t) => {
 
   const response = reply.args[0][0];
 
+  t.falsy(response instanceof Error, response);
+
   t.deepEqual(
     response,
     models.map(({ id }) => ({ id })),
