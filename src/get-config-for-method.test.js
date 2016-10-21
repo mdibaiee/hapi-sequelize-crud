@@ -7,6 +7,7 @@ import
   payloadMethods,
   scopeParamsMethods,
   idParamsMethods,
+  restrictMethods,
   sequelizeOperators,
 } from './get-config-for-method.js';
 
@@ -467,6 +468,101 @@ test('validate.payload idParamsMethods', (t) => {
     );
   });
 });
+
+test('validate.query restrictMethods', (t) => {
+  restrictMethods.forEach((method) => {
+    const configForMethod = getConfigForMethod({ method });
+    const { query } = configForMethod.validate;
+    const restrictKeys = ['limit', 'offset'];
+
+    restrictKeys.forEach((key) => {
+      t.ifError(
+        query.validate({ [key]: 0 }).error
+        , `applies restriction (${key}) to validate.query`
+      );
+    });
+
+    t.ifError(
+      query.validate({ order: ['thing', 'DESC'] }).error
+      , 'applies `order` to validate.query'
+    );
+
+    t.truthy(
+      query.validate({ notAThing: true }).error
+      , 'errors on a non-valid key'
+    );
+  });
+});
+
+test('validate.query restrictMethods w/ config as plain object', (t) => {
+  const config = {
+    validate: {
+      query: {
+        aKey: joi.boolean(),
+      },
+    },
+  };
+
+  restrictMethods.forEach((method) => {
+    const configForMethod = getConfigForMethod({
+      method,
+      config,
+    });
+    const { query } = configForMethod.validate;
+
+    const keys = [
+      ...Object.keys(config.validate.query),
+    ];
+
+    keys.forEach((key) => {
+      t.ifError(
+        query.validate({ [key]: true }).error
+        , `applies ${key} to validate.query`
+      );
+    });
+
+    t.truthy(
+      query.validate({ notAThing: true }).error
+      , 'errors on a non-valid key'
+    );
+  });
+});
+
+test('validate.query restrictMethods w/ config as joi object', (t) => {
+  const queryKeys = {
+    aKey: joi.boolean(),
+  };
+  const config = {
+    validate: {
+      query: joi.object().keys(queryKeys),
+    },
+  };
+
+  whereMethods.forEach((method) => {
+    const configForMethod = getConfigForMethod({
+      method,
+      config,
+    });
+    const { query } = configForMethod.validate;
+
+    const keys = [
+      ...Object.keys(queryKeys),
+    ];
+
+    keys.forEach((key) => {
+      t.ifError(
+        query.validate({ [key]: true }).error
+        , `applies ${key} to validate.query`
+      );
+    });
+
+    t.truthy(
+      query.validate({ notAThing: true }).error
+      , 'errors on a non-valid key'
+    );
+  });
+});
+
 
 test('does not modify initial config on multiple passes', (t) => {
   const { config } = t.context;

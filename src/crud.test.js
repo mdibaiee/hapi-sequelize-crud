@@ -37,7 +37,7 @@ test.beforeEach('setup request stub', (t) => {
   t.context.request = {
     query: {},
     payload: {},
-    models: [t.context.model],
+    models: t.context.models,
   };
 });
 
@@ -126,6 +126,8 @@ test('crud#list handler', async (t) => {
 
   const response = reply.args[0][0];
 
+  t.falsy(response instanceof Error, response);
+
   t.deepEqual(
     response,
     models.map(({ id }) => ({ id })),
@@ -153,5 +155,77 @@ test('crud#list handler if parseInclude errors', async (t) => {
   t.truthy(
     response.isBoom,
     'responds with a Boom error'
+  );
+});
+
+test('crud#list handler with limit', async (t) => {
+  const { server, model, request, reply, models } = t.context;
+  const { findAll } = model;
+
+  // set the limit
+  request.query.limit = 1;
+
+  list({ server, model });
+  const { handler } = server.route.args[0][0];
+  model.findAll.resolves(models);
+
+  try {
+    await handler(request, reply);
+  } catch (e) {
+    t.ifError(e, 'does not error while handling');
+  } finally {
+    t.pass('does not error while handling');
+  }
+
+  t.truthy(
+    reply.calledOnce
+    , 'calls reply only once'
+  );
+
+  const response = reply.args[0][0];
+  const findAllArgs = findAll.args[0][0];
+
+  t.falsy(response instanceof Error, response);
+
+  t.is(
+    findAllArgs.limit,
+    request.query.limit,
+    'queries with the limit'
+  );
+});
+
+test('crud#list handler with order', async (t) => {
+  const { server, model, request, reply, models } = t.context;
+  const { findAll } = model;
+
+  // set the limit
+  request.query.order = 'key';
+
+  list({ server, model });
+  const { handler } = server.route.args[0][0];
+  model.findAll.resolves(models);
+
+  try {
+    await handler(request, reply);
+  } catch (e) {
+    t.ifError(e, 'does not error while handling');
+  } finally {
+    t.pass('does not error while handling');
+  }
+
+  t.truthy(
+    reply.calledOnce
+    , 'calls reply only once'
+  );
+
+  const response = reply.args[0][0];
+  const findAllArgs = findAll.args[0][0];
+
+  t.falsy(response instanceof Error, response);
+
+  t.deepEqual(
+    findAllArgs.order,
+    [request.query.order],
+    'queries with the order as an array b/c that\'s what sequelize wants'
   );
 });

@@ -124,6 +124,45 @@ If you want to get multiple related models, just pass multiple `include` paramet
 Team.findAll({include: [City, Uniform]})
 ```
 
+## `limit` and `offset` queries
+Restricting list (`GET`) and scope queries to a restricted count can be done by passing `limit=<number>` and/or `offset=<number>`.
+
+```js
+// returns 10 teams starting from the 10th
+// GET /teams?limit=10&offset=10
+
+// results in a Sequelize query:
+Team.findAll({limit: 10, offset: 10})
+```
+
+## `order` queries
+You can change the order of the resulting query by passing `order` to the query.
+
+```js
+// returns the teams ordered by the name column
+// GET /teams?order[]=name
+
+// results in a Sequelize query:
+Team.findAll({order: ['name']})
+```
+
+```js
+// returns the teams ordered by the name column, descending
+// GET /teams?order[0]=name&order[0]=DESC
+
+// results in a Sequelize query:
+Team.findAll({order: [['name', 'DESC']]})
+```
+
+```js
+// returns the teams ordered by the name, then the city columns, descending
+// GET /teams?order[0]=name&order[1]=city
+
+// results in a Sequelize query:
+Team.findAll({order: [['name'], ['city']]})
+```
+
+
 ## Authorization and other hooks
 You can use Hapi's [`ext` option](http://hapijs.com/api#route-options) to interact with the request both before and after this module does. This is useful if you want to enforce authorization, or modify the request before or after this module does. Hapi [has a full list of hooks](http://hapijs.com/api#request-lifecycle) you can use.
 

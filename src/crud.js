@@ -2,7 +2,7 @@ import joi from 'joi';
 import path from 'path';
 import error from './error';
 import _ from 'lodash';
-import { parseInclude, parseWhere } from './utils';
+import { parseInclude, parseWhere, parseLimitAndOffset, parseOrder } from './utils';
 import { notFound } from 'boom';
 import * as associations from './associations/index';
 import getConfigForMethod from './get-config-for-method.js';
@@ -144,11 +144,13 @@ export const list = ({ server, model, prefix = '/', config }) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+      const { limit, offset } = parseLimitAndOffset(request);
+      const order = parseOrder(request);
 
       if (include instanceof Error) return void reply(include);
 
       const list = await model.findAll({
-        where, include,
+        where, include, limit, offset, order,
       });
 
       reply(list.map((item) => item.toJSON()));
@@ -191,10 +193,14 @@ export const scope = ({ server, model, prefix = '/', config }) => {
     async handler(request, reply) {
       const include = parseInclude(request);
       const where = parseWhere(request);
+      const { limit, offset } = parseLimitAndOffset(request);
+      const order = parseOrder(request);
 
       if (include instanceof Error) return void reply(include);
 
-      const list = await model.scope(request.params.scope).findAll({ include, where });
+      const list = await model.scope(request.params.scope).findAll({
+        include, where, limit, offset, order,
+      });
 
       reply(list.map((item) => item.toJSON()));
     },

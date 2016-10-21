@@ -10,5 +10,5 @@
     "transform-decorators-legacy",
     "transform-es2015-modules-commonjs"
   ],
-  "sourceMaps": true
+  "sourceMaps": "inline"
 }
