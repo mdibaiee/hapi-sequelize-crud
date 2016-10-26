@@ -62,8 +62,9 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
     return params;
   }, {});
 
+  const validAssociations = joi.string().valid(...modelAssociations);
   const associationValidation = {
-    include: joi.array().items(joi.string().valid(...modelAssociations)),
+    include: [joi.array().items(validAssociations), validAssociations],
   };
 
   const scopes = Object.keys(model.options.scopes);
