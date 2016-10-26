@@ -63,14 +63,17 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       const { _singular, _plural, _Singular, _Plural } = target;
       return [_singular, _plural, _Singular, _Plural];
     }),
-  ];
+  ].filter(Boolean);
 
   const attributeValidation = modelAttributes.reduce((params, attribute) => {
+    // TODO: use joi-sequelize
     params[attribute] = joi.any();
     return params;
   }, {});
 
-  const validAssociations = joi.string().valid(...modelAssociations);
+  const validAssociations = modelAssociations.length
+    ? joi.string().valid(...modelAssociations)
+    : joi.valid(null);
   const associationValidation = {
     include: [joi.array().items(validAssociations), validAssociations],
   };
