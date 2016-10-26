@@ -109,7 +109,7 @@ Getting related models is easy, just use a query parameter `include`.
 
 ```js
 // returns all teams with their related City model
-// GET /teams?include=City
+// GET /teams?include=city
 
 // results in a Sequelize query:
 Team.findAll({include: City})
@@ -118,10 +118,19 @@ Team.findAll({include: City})
 If you want to get multiple related models, just pass multiple `include` parameters.
 ```js
 // returns all teams with their related City and Uniform models
-// GET /teams?include=City&include=Uniform
+// GET /teams?include[]=city&include[]=uniform
 
 // results in a Sequelize query:
 Team.findAll({include: [City, Uniform]})
+```
+
+For models that have a many-to-many relationship, you can also pass the plural version of the association.
+```js
+// returns all teams with their related City and Uniform models
+// GET /teams?include=players
+
+// results in a Sequelize query:
+Team.findAll({include: [Player]})
 ```
 
 ## `limit` and `offset` queries

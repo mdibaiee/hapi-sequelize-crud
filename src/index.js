@@ -32,6 +32,8 @@ const register = (server, options = {}, next) => {
     const { plural, singular } = model.options.name;
     model._plural = plural.toLowerCase();
     model._singular = singular.toLowerCase();
+    model._Plural = plural;
+    model._Singular = singular;
 
     // Join tables
     if (model.options.name.singular !== model.name) continue;

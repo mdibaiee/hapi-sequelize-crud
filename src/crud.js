@@ -55,7 +55,15 @@ models: {
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
   const modelAttributes = Object.keys(model.attributes);
-  const modelAssociations = Object.keys(model.associations);
+  const associatedModelNames = Object.keys(model.associations);
+  const modelAssociations = [
+    ...associatedModelNames,
+    ..._.flatMap(associatedModelNames, (associationName) => {
+      const { target } = model.associations[associationName];
+      const { _singular, _plural, _Singular, _Plural } = target;
+      return [_singular, _plural, _Singular, _Plural];
+    }),
+  ];
 
   const attributeValidation = modelAttributes.reduce((params, attribute) => {
     params[attribute] = joi.any();
