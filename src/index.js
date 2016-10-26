@@ -7,7 +7,7 @@ import url from 'url';
 import qs from 'qs';
 
 const register = (server, options = {}, next) => {
-  options.prefix = options.prefix || '';
+  options.prefix = options.prefix || '/';
   options.name = options.name || 'db';
 
   const db = server.plugins['hapi-sequelize'][options.name];
