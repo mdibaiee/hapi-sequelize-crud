@@ -244,9 +244,17 @@ export const destroy = ({ server, model, prefix = '/', config }) => {
     @error
     async handler(request, reply) {
       const where = parseWhere(request);
-      if (request.params.id) where[model.primaryKeyField] = request.params.id;
+      const { id } = request.params;
+      if (id) where[model.primaryKeyField] = id;
 
       const list = await model.findAll({ where });
+
+      if (!list.length) {
+        return void reply(id
+          ? notFound(`${id} not found.`)
+          : notFound('Nothing found.')
+          );
+      }
 
       await Promise.all(list.map(instance => instance.destroy()));
 
@@ -266,8 +274,16 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
     @error
     async handler(request, reply) {
       const where = parseWhere(request);
+      const { id } = request.params;
 
       const list = await model.findAll({ where });
+
+      if (!list.length) {
+        return void reply(id
+          ? notFound(`${id} not found.`)
+          : notFound('Nothing found.')
+          );
+      }
 
       await Promise.all(list.map(instance => instance.destroy()));
 
