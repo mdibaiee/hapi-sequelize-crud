@@ -10,10 +10,11 @@
   },
   "scripts": {
     "lint": "eslint src",
-    "test": "ava --require babel-register --source='src/**/*.js' --source='!build/**/*' --tap=${CI-false} src/**/*.test.js | $(if [ -z ${CI:-} ]; then echo 'tail'; else tap-xunit > $CIRCLE_TEST_REPORTS/ava/ava.xml; fi;)",
-    "tdd": "ava --require babel-register --source='src/**/*.js' --source='!build/**/*' --watch src/**/*.test.js",
-    "build": "scripty",
-    "watch": "scripty"
+    "test": "SCRIPTY_SILENT=true scripty",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "tdd": "ava --watch",
+    "build": "SCRIPTY_SILENT=true scripty",
+    "watch": "SCRIPTY_SILENT=true scripty"
   },
   "repository": {
     "git": "https://github.com/mdibaiee/hapi-sequelize-crud"
@@ -56,5 +57,21 @@
   },
   "optionalDependencies": {
     "babel-polyfill": "^6.13.0"
+  },
+  "nyc": {
+    "cache": true
+  },
+  "ava": {
+    "source": [
+      "src/**/*.js",
+      "!build/**/*"
+    ],
+    "files": [
+      "**/*.test.js",
+      "!build/**/*"
+    ],
+    "require": [
+      "babel-register"
+    ]
   }
 }

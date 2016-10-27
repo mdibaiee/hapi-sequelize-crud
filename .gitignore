@@ -36,3 +36,6 @@ npm-debug.log
 
 # System
 .DS_Store
+
+coverage.lcov
+.nyc_output
