@@ -214,6 +214,8 @@ export const scope = ({ server, model, prefix = '/', config }) => {
         include, where, limit, offset, order,
       });
 
+      if (!list.length) return void reply(notFound('Nothing found.'));
+
       reply(list.map((item) => item.toJSON()));
     },
     config,
