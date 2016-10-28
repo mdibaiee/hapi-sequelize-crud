@@ -309,6 +309,8 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
 
       const list = await model.scope(request.params.scope).findAll({ include, where });
 
+      if (!list.length) return void reply(notFound('Nothing found.'));
+
       await Promise.all(list.map(instance => instance.destroy()));
 
       const listAsJSON = list.map((item) => item.toJSON());
