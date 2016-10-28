@@ -225,7 +225,7 @@ test('crud#list handler with order', async (t) => {
 
   t.deepEqual(
     findAllArgs.order,
-    [request.query.order],
+    [[request.query.order]],
     'queries with the order as an array b/c that\'s what sequelize wants'
   );
 });

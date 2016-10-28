@@ -58,7 +58,9 @@ export default (test) => {
     const { Player, Team, City } = t.context.sequelize.models;
     const city1 = await City.create({ name: 'Healdsburg' });
     const team1 = await Team.create({ name: 'Baseballs', cityId: city1.id });
-    const player1 = await Player.create({ name: 'Pinot', teamId: team1.id });
+    const player1 = await Player.create({
+      name: 'Pinot', teamId: team1.id, active: true,
+    });
     const player2 = await Player.create({ name: 'Syrah', teamId: team1.id });
     t.context.instances = { city1, team1, player1, player2 };
   });

@@ -57,7 +57,7 @@ test('parseOrder returns order when a string', (t) => {
 
   t.deepEqual(
     parseOrder(request)
-    , [order]
+    , [[order]]
   );
 });
 
@@ -69,7 +69,7 @@ test('parseOrder returns order when json', (t) => {
 
   t.deepEqual(
     parseOrder(request)
-    , order
+    , [order]
   );
 });
 

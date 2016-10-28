@@ -214,6 +214,8 @@ export const scope = ({ server, model, prefix = '/', config }) => {
         include, where, limit, offset, order,
       });
 
+      if (!list.length) return void reply(notFound('Nothing found.'));
+
       reply(list.map((item) => item.toJSON()));
     },
     config,
@@ -308,6 +310,8 @@ export const destroyScope = ({ server, model, prefix = '/', config }) => {
       if (include instanceof Error) return void reply(include);
 
       const list = await model.scope(request.params.scope).findAll({ include, where });
+
+      if (!list.length) return void reply(notFound('Nothing found.'));
 
       await Promise.all(list.map(instance => instance.destroy()));
 

@@ -7,12 +7,25 @@ export default (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     teamId: DataTypes.INTEGER,
+    active: DataTypes.BOOLEAN,
   }, {
     classMethods: {
       associate: (models) => {
         models.Player.belongsTo(models.Team, {
           foreignKey: { name: 'teamId' },
         });
+      },
+    },
+    scopes: {
+      returnsOne: {
+        where: {
+          active: true,
+        },
+      },
+      returnsNone: {
+        where: {
+          name: 'notaname',
+        },
       },
     },
   });
