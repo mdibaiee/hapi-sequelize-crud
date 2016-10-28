@@ -158,6 +158,7 @@ Team.findAll({order: ['name']})
 ```js
 // returns the teams ordered by the name column, descending
 // GET /teams?order[0]=name&order[0]=DESC
+// GET /teams?order=name%20DESC
 
 // results in a Sequelize query:
 Team.findAll({order: [['name', 'DESC']]})
