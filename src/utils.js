@@ -70,7 +70,7 @@ export const parseOrder = (request) => {
 
   // transform to an array so sequelize will escape the input for us and
   // maintain security. See http://docs.sequelizejs.com/en/latest/docs/querying/#ordering
-  if (isString(order)) return order.split(' ');
+  if (isString(order)) return [order.split(' ')];
 
   for (const key of Object.keys(order)) {
     try {
@@ -80,7 +80,7 @@ export const parseOrder = (request) => {
     }
   }
 
-  return order;
+  return [order];
 };
 
 export const getMethod = (model, association, plural = true, method = 'get') => {

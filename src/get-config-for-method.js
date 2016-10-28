@@ -144,7 +144,7 @@ export default ({
       .keys({
         limit: joi.number().min(0).integer(),
         offset: joi.number().min(0).integer(),
-        order: joi.array(),
+        order: [joi.array(), joi.string()],
       }),
       get(methodConfig, 'validate.query')
     );
