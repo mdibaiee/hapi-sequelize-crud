@@ -3,21 +3,27 @@ import { notImplemented } from 'boom';
 
 const sequelizeKeys = ['include', 'order', 'limit', 'offset'];
 
-export const parseInclude = request => {
-  const include = Array.isArray(request.query.include)
-    ? request.query.include
-    : [request.query.include]
-    ;
-
+const getModels = (request) => {
   const noGetDb = typeof request.getDb !== 'function';
   const noRequestModels = !request.models;
-
   if (noGetDb && noRequestModels) {
     return notImplemented('`request.getDb` or `request.models` are not defined.'
                    + 'Be sure to load hapi-sequelize before hapi-sequelize-crud.');
   }
 
   const { models } = noGetDb ? request : request.getDb();
+
+  return models;
+};
+
+export const parseInclude = request => {
+  const include = Array.isArray(request.query.include)
+    ? request.query.include
+    : [request.query.include]
+    ;
+
+  const models = getModels(request);
+  if (models.isBoom) return models;
 
   return include.map(a => {
     const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
@@ -63,24 +69,40 @@ export const parseLimitAndOffset = (request) => {
   return out;
 };
 
+const parseOrderArray = (order, models) => {
+  return order.map((requestColumn) => {
+    if (Array.isArray(requestColumn)) {
+      return parseOrderArray(requestColumn, models);
+    }
+
+    let column;
+    try {
+      column = JSON.parse(requestColumn);
+    } catch (e) {
+      column = requestColumn;
+    }
+
+    if (column.model) column.model = models[column.model];
+
+    return column;
+  });
+};
+
 export const parseOrder = (request) => {
   const { order } = request.query;
 
   if (!order) return null;
 
+  const models = getModels(request);
+  if (models.isBoom) return models;
+
   // transform to an array so sequelize will escape the input for us and
   // maintain security. See http://docs.sequelizejs.com/en/latest/docs/querying/#ordering
-  if (isString(order)) return [order.split(' ')];
+  const requestOrderColumns = isString(order) ? [order.split(' ')] : order;
 
-  for (const key of Object.keys(order)) {
-    try {
-      order[key] = JSON.parse(order[key]);
-    } catch (e) {
-      //
-    }
-  }
+  const parsedOrder = parseOrderArray(requestOrderColumns, models);
 
-  return [order];
+  return parsedOrder;
 };
 
 export const getMethod = (model, association, plural = true, method = 'get') => {
