@@ -172,6 +172,22 @@ Team.findAll({order: [['name', 'DESC']]})
 Team.findAll({order: [['name'], ['city']]})
 ```
 
+You can even order by associated models. Though there is a [sequelize bug](https://github.com/sequelize/sequelize/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20order%20join%20) that might prevent this from working properly. A workaround is to `&include` the model you're ordering by.
+```js
+// returns the players ordered by the team name
+// GET /players?order[0]={"model": "Team"}&order[0]=name
+
+// results in a Sequelize query:
+Player.findAll({order: [[{model: Team}, 'name']]})
+
+// if the above returns a Sequelize error: `No such column Team.name`,
+// you can work around this by forcing the join into the query:
+// GET /players?order[0]={"model": "Team"}&order[0]=name&include=team
+
+// results in a Sequelize query:
+Player.findAll({order: [[{model: Team}, 'name']], include: [Team]})
+```
+
 
 ## Authorization and other hooks
 You can use Hapi's [`ext` option](http://hapijs.com/api#route-options) to interact with the request both before and after this module does. This is useful if you want to enforce authorization, or modify the request before or after this module does. Hapi [has a full list of hooks](http://hapijs.com/api#request-lifecycle) you can use.

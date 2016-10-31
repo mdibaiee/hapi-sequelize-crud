@@ -2,7 +2,8 @@ import test from 'ava';
 import { parseLimitAndOffset, parseOrder, parseWhere } from './utils.js';
 
 test.beforeEach((t) => {
-  t.context.request = { query: {} };
+  const models = t.context.models = { User: {} };
+  t.context.request = { query: {}, models };
 });
 
 test('parseLimitAndOffset is a function', (t) => {
@@ -62,14 +63,13 @@ test('parseOrder returns order when a string', (t) => {
 });
 
 test('parseOrder returns order when json', (t) => {
-  const { request } = t.context;
-  const order = [{ model: 'User' }, 'DESC'];
+  const { request,models } = t.context;
   request.query.order = [JSON.stringify({ model: 'User' }), 'DESC'];
   request.query.thing = 'hi';
 
   t.deepEqual(
     parseOrder(request)
-    , [order]
+    , [{ model: models.User }, 'DESC']
   );
 });
 
