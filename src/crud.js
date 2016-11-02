@@ -165,6 +165,8 @@ export const list = ({ server, model, prefix = '/', config }) => {
         where, include, limit, offset, order,
       });
 
+      if (!list.length) return void reply(notFound('Nothing found.'));
+
       reply(list.map((item) => item.toJSON()));
     },
 

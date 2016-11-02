@@ -27,6 +27,13 @@ export default (sequelize, DataTypes) => {
           name: 'notaname',
         },
       },
+      returnsAll: {
+        where: {
+          name: {
+            $ne: 'notaname',
+          },
+        },
+      },
     },
   });
 };
