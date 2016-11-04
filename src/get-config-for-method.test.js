@@ -20,8 +20,19 @@ test.beforeEach((t) => {
     myKey: joi.any(),
   };
 
+  const validAssociationsString = joi.string().valid(...t.context.models);
+  const validAssociationsObject = joi.object().keys({
+    model: joi.string().valid(...t.context.models),
+    where: joi.object(),
+  });
+
   t.context.associationValidation = {
-    include: joi.array().items(joi.string().valid(t.context.models)),
+    include: [
+      joi.array().items(validAssociationsString),
+      joi.array().items(validAssociationsObject),
+      validAssociationsString,
+      validAssociationsObject,
+    ],
   };
 
   t.context.config = {
@@ -151,12 +162,12 @@ test('query attributeValidation w/ config as joi object', (t) => {
 
 test('validate.query associationValidation', (t) => {
   const { attributeValidation, associationValidation, models } = t.context;
-
+  const modelAssociations = models;
   includeMethods.forEach((method) => {
     const configForMethod = getConfigForMethod({
       method,
       attributeValidation,
-      associationValidation,
+      modelAssociations,
     });
     const { query } = configForMethod.validate;
 
@@ -183,6 +194,7 @@ test('validate.query associationValidation', (t) => {
 
 test('query associationValidation w/ config as plain object', (t) => {
   const { associationValidation, models } = t.context;
+  const modelAssociations = models;
   const config = {
     validate: {
       query: {
@@ -194,7 +206,7 @@ test('query associationValidation w/ config as plain object', (t) => {
   includeMethods.forEach((method) => {
     const configForMethod = getConfigForMethod({
       method,
-      associationValidation,
+      modelAssociations,
       config,
     });
     const { query } = configForMethod.validate;
@@ -222,6 +234,7 @@ test('query associationValidation w/ config as plain object', (t) => {
 
 test('query associationValidation w/ config as joi object', (t) => {
   const { associationValidation, models } = t.context;
+  const modelAssociations = models;
   const queryKeys = {
     aKey: joi.boolean(),
   };
@@ -234,7 +247,7 @@ test('query associationValidation w/ config as joi object', (t) => {
   includeMethods.forEach((method) => {
     const configForMethod = getConfigForMethod({
       method,
-      associationValidation,
+      modelAssociations,
       config,
     });
     const { query } = configForMethod.validate;
