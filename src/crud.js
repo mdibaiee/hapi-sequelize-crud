@@ -13,7 +13,7 @@ const createAll = ({
   prefix,
   config,
   attributeValidation,
-  associationValidation,
+  modelAssociations,
   scopes,
 }) => {
   Object.keys(methods).forEach((method) => {
@@ -24,7 +24,7 @@ const createAll = ({
       config: getConfigForMethod({
         method,
         attributeValidation,
-        associationValidation,
+        modelAssociations,
         config,
         scopes,
       }),
@@ -35,22 +35,22 @@ const createAll = ({
 export { associations };
 
 /*
-The `models` option, becomes `permissions`, and can look like:
+ The `models` option, becomes `permissions`, and can look like:
 
-```
-models: ['cat', 'dog']
-```
+ ```
+ models: ['cat', 'dog']
+ ```
 
-or
+ or
 
-```
-models: {
-  cat: ['list', 'get']
-  , dog: true // all
-}
-```
+ ```
+ models: {
+ cat: ['list', 'get']
+ , dog: true // all
+ }
+ ```
 
-*/
+ */
 
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
@@ -71,13 +71,6 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
     return params;
   }, {});
 
-  const validAssociations = modelAssociations.length
-    ? joi.string().valid(...modelAssociations)
-    : joi.valid(null);
-  const associationValidation = {
-    include: [joi.array().items(validAssociations), validAssociations],
-  };
-
   const scopes = Object.keys(model.options.scopes);
 
   // if we don't have any permissions set, just create all the methods
@@ -88,14 +81,14 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       prefix,
       config,
       attributeValidation,
-      associationValidation,
+      modelAssociations,
       scopes,
     });
-  // if permissions are set, but we can't parse them, throw an error
+    // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
     throw new Error('hapi-sequelize-crud: `models` property must be an array');
-  // if permissions are set, but the only thing we've got is a model name, there
-  // are no permissions to be set, so just create all methods and move on
+    // if permissions are set, but the only thing we've got is a model name, there
+    // are no permissions to be set, so just create all methods and move on
   } else if (permissions.includes(modelName)) {
     createAll({
       server,
@@ -103,10 +96,10 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       prefix,
       config,
       attributeValidation,
-      associationValidation,
+      modelAssociations,
       scopes,
     });
-  // if we've gotten here, we have complex permissions and need to set them
+    // if we've gotten here, we have complex permissions and need to set them
   } else {
     const permissionOptions = permissions.filter((permission) => {
       return permission.model === modelName;
@@ -125,7 +118,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
               config: getConfigForMethod({
                 method,
                 attributeValidation,
-                associationValidation,
+                modelAssociations,
                 scopes,
                 config: permissionConfig,
               }),
@@ -137,7 +130,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
             model,
             prefix,
             attributeValidation,
-            associationValidation,
+            modelAssociations,
             scopes,
             config: permissionConfig,
           });
@@ -257,7 +250,7 @@ export const destroy = ({ server, model, prefix = '/', config }) => {
         return void reply(id
           ? notFound(`${id} not found.`)
           : notFound('Nothing found.')
-          );
+        );
       }
 
       await Promise.all(list.map(instance => instance.destroy()));
@@ -286,7 +279,7 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
         return void reply(id
           ? notFound(`${id} not found.`)
           : notFound('Nothing found.')
-          );
+        );
       }
 
       await Promise.all(list.map(instance => instance.destroy()));

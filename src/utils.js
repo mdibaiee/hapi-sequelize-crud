@@ -25,13 +25,16 @@ export const parseInclude = request => {
   const models = getModels(request);
   if (models.isBoom) return models;
 
-  return include.map(a => {
-    const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
-      const { _singular, _plural } = models[modelName];
-      return _singular === a || _plural === a;
-    });
+  return include.map(b => {
+    const a = /^{.*}$/.test(b) ? JSON.parse(b) : b;
+    if (typeof a !== 'object') {
+      const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
+        const { _singular, _plural } = models[modelName];
+        return _singular === a || _plural === a;
+      });
 
-    if (singluarOrPluralMatch) return models[singluarOrPluralMatch];
+      if (singluarOrPluralMatch) return models[singluarOrPluralMatch];
+    }
 
     if (typeof a === 'string') return models[a];
 

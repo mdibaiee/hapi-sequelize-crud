@@ -85,3 +85,13 @@ test('multiple includes /team?include[]=players&include[]=city', async (t) => {
   t.truthy(playerIds.includes(player2.id));
   t.is(result.City.id, city1.id);
 });
+
+test('inlcude filter /teams?include[]={"model": "City", "where": {"name": "Healdsburg"}}'
+  , async (t) => {
+    const { server } = t.context;
+    const url = '/teams?include[]={"model": "City", "where": {"name": "Healdsburg"}}';
+    const method = 'GET';
+
+    const { statusCode } = await server.inject({ url, method });
+    t.is(statusCode, STATUS_OK);
+  });
