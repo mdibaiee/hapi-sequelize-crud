@@ -92,24 +92,14 @@ It's easy to restrict your requests using Sequelize's `where` query option. Just
 Team.findOne({ where: { city: 'windsor' }})
 ```
 
-You can also do more complex queries by setting the value of a key to JSON.
-
-```js
-// returns only teams that have a `address.city` property of "windsor"
-// GET /team?city={"address": "windsor"}
-// or
-// GET /team?city[address]=windsor
-
-// results in the Sequelize query:
-Team.findOne({ where: { address: { city: 'windsor' }}})
-```
-
 ## `include` queries
 Getting related models is easy, just use a query parameter `include`.
 
 ```js
 // returns all teams with their related City model
-// GET /teams?include=city
+// GET /teams?include=city or
+// GET /teams?include={"include": {"model": "City"}}}
+
 
 // results in a Sequelize query:
 Team.findAll({include: City})
@@ -131,6 +121,15 @@ For models that have a many-to-many relationship, you can also pass the plural v
 
 // results in a Sequelize query:
 Team.findAll({include: [Player]})
+```
+
+Filtering by related models property, you can pass **where** paremeter inside each **include** item(s) object.
+```js
+// returns all team with their related City where City property name equals Healdsburg
+// GET /teams?include={"include": {"model": "City", "where": {"name": "Healdsburg"}}}
+
+// results in a Sequelize query:
+Team.findAll({include: {model: City, where: {name: 'Healdsburg'}}})
 ```
 
 ## `limit` and `offset` queries
