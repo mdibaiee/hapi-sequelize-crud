@@ -72,7 +72,7 @@ export const restrictMethods = [
 ];
 
 export default ({
-  method, attributeValidation, modelAssociations, scopes = [], config = {},
+  method, attributeValidation, associationValidation, scopes = [], config = {},
 }) => {
   const hasWhere = whereMethods.includes(method);
   const hasInclude = includeMethods.includes(method);
@@ -96,27 +96,9 @@ export default ({
   }
 
   if (hasInclude) {
-    const modelsHasAssociations = modelAssociations && modelAssociations.length;
-    const validAssociationsString = modelsHasAssociations
-      ? joi.string().valid(...modelAssociations)
-      : joi.valid(null);
-    const validAssociationsObject = modelsHasAssociations
-      ? joi.object().keys({
-        model: joi.string().valid(...modelAssociations),
-        where: joi.object().keys({
-          ...attributeValidation,
-          ...sequelizeOperators,
-        }),
-      })
-      : joi.valid(null);
     const query = concatToJoiObject(joi.object()
       .keys({
-        include: [
-          joi.array().items(validAssociationsString),
-          joi.array().items(validAssociationsObject),
-          validAssociationsString,
-          validAssociationsObject,
-        ],
+        ...associationValidation,
       }),
       get(methodConfig, 'validate.query')
     );

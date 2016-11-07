@@ -5,16 +5,16 @@ import _ from 'lodash';
 import { parseInclude, parseWhere, parseLimitAndOffset, parseOrder } from './utils';
 import { notFound } from 'boom';
 import * as associations from './associations/index';
-import getConfigForMethod from './get-config-for-method.js';
+import getConfigForMethod, { sequelizeOperators } from './get-config-for-method.js';
 
 const createAll = ({
-  server,
-  model,
-  prefix,
-  config,
-  attributeValidation,
-  modelAssociations,
-  scopes,
+    server,
+    model,
+    prefix,
+    config,
+    attributeValidation,
+    associationValidation,
+    scopes,
 }) => {
   Object.keys(methods).forEach((method) => {
     methods[method]({
@@ -24,7 +24,7 @@ const createAll = ({
       config: getConfigForMethod({
         method,
         attributeValidation,
-        modelAssociations,
+        associationValidation,
         config,
         scopes,
       }),
@@ -71,6 +71,27 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
     return params;
   }, {});
 
+  const modelsHasAssociations = modelAssociations && modelAssociations.length;
+  const validAssociationsString = modelsHasAssociations
+      ? joi.string().valid(...modelAssociations)
+      : joi.valid(null);
+  const validAssociationsObject = modelsHasAssociations
+      ? joi.object().keys({
+        model: joi.string().valid(...modelAssociations),
+        where: joi.object().keys({
+          ...attributeValidation,
+          ...sequelizeOperators,
+        }),
+      })
+      : joi.valid(null);
+  const associationValidation = {
+    include: [
+      joi.array().items(validAssociationsString),
+      joi.array().items(validAssociationsObject),
+      validAssociationsString,
+      validAssociationsObject,
+    ],
+  };
   const scopes = Object.keys(model.options.scopes);
 
   // if we don't have any permissions set, just create all the methods
@@ -81,7 +102,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       prefix,
       config,
       attributeValidation,
-      modelAssociations,
+      associationValidation,
       scopes,
     });
     // if permissions are set, but we can't parse them, throw an error
@@ -96,7 +117,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       prefix,
       config,
       attributeValidation,
-      modelAssociations,
+      associationValidation,
       scopes,
     });
     // if we've gotten here, we have complex permissions and need to set them
@@ -118,7 +139,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
               config: getConfigForMethod({
                 method,
                 attributeValidation,
-                modelAssociations,
+                associationValidation,
                 scopes,
                 config: permissionConfig,
               }),
@@ -130,7 +151,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
             model,
             prefix,
             attributeValidation,
-            modelAssociations,
+            associationValidation,
             scopes,
             config: permissionConfig,
           });
@@ -248,8 +269,8 @@ export const destroy = ({ server, model, prefix = '/', config }) => {
 
       if (!list.length) {
         return void reply(id
-          ? notFound(`${id} not found.`)
-          : notFound('Nothing found.')
+            ? notFound(`${id} not found.`)
+            : notFound('Nothing found.')
         );
       }
 
@@ -277,8 +298,8 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
 
       if (!list.length) {
         return void reply(id
-          ? notFound(`${id} not found.`)
-          : notFound('Nothing found.')
+            ? notFound(`${id} not found.`)
+            : notFound('Nothing found.')
         );
       }
 
