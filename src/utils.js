@@ -1,5 +1,6 @@
 import { omit, identity, toNumber, isString, isUndefined } from 'lodash';
 import { notImplemented } from 'boom';
+import joi from 'joi';
 
 const sequelizeKeys = ['include', 'order', 'limit', 'offset'];
 
@@ -26,7 +27,14 @@ export const parseInclude = request => {
   if (models.isBoom) return models;
 
   return include.map(b => {
-    const a = /^{.*}$/.test(b) ? JSON.parse(b) : b;
+    let a = b;
+    try {
+      if (joi.string().regex(/^\{.*?"model":.*?\}$/)) {
+        a = JSON.parse(b);
+      }
+    } catch (e) {
+      //
+    }
     if (typeof a !== 'object') {
       const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
         const { _singular, _plural } = models[modelName];
