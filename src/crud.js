@@ -56,6 +56,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
   const modelName = model._singular;
   const modelAttributes = Object.keys(model.attributes);
   const associatedModelNames = Object.keys(model.associations);
+  const associatedModelAliases = _.map(model.associations, (assoc => assoc.as));
   const modelAssociations = [
     ...associatedModelNames,
     ..._.flatMap(associatedModelNames, (associationName) => {
@@ -82,12 +83,13 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
           ...attributeValidation,
           ...sequelizeOperators,
         }),
+        as: joi.string().valid(...associatedModelAliases),
+        include: joi.any(), // @Todo: should validate the same as associationValidation var below
       })
       : joi.valid(null);
   const associationValidation = {
     include: [
-      joi.array().items(validAssociationsString),
-      joi.array().items(validAssociationsObject),
+      joi.array().items(validAssociationsString, validAssociationsObject),
       validAssociationsString,
       validAssociationsObject,
     ],
@@ -161,14 +163,14 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
   }
 };
 
-export const list = ({ server, model, prefix = '/', config }) => {
+export const list = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._plural),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { limit, offset } = parseLimitAndOffset(request);
       const order = parseOrder(request);
@@ -188,14 +190,14 @@ export const list = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const get = ({ server, model, prefix = '/', config }) => {
+export const get = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._singular, '{id?}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { id } = request.params;
       if (id) where[model.primaryKeyField] = id;
@@ -212,14 +214,14 @@ export const get = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const scope = ({ server, model, prefix = '/', config }) => {
+export const scope = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { limit, offset } = parseLimitAndOffset(request);
       const order = parseOrder(request);
@@ -313,14 +315,14 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const destroyScope = ({ server, model, prefix = '/', config }) => {
+export const destroyScope = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'DELETE',
     path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       if (include instanceof Error) return void reply(include);
