@@ -18,6 +18,42 @@ const getModels = (request) => {
   return models;
 };
 
+const getModelInstance = (models, includeItem) => {
+  return new Promise(async(resolve) => {
+    if (includeItem) {
+      if (typeof includeItem !== 'object') {
+        const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
+          const { _singular, _plural } = models[modelName];
+          return _singular === includeItem || _plural === includeItem;
+        });
+
+        if (singluarOrPluralMatch) {
+          return resolve(models[singluarOrPluralMatch]);
+        }
+      }
+
+      if (typeof includeItem === 'string' && models.hasOwnProperty(includeItem)) {
+        return resolve(models[includeItem]);
+      } else if (typeof includeItem === 'object') {
+        if (
+          typeof includeItem.model === 'string' &&
+          includeItem.model.length &&
+          models.hasOwnProperty(includeItem.model)
+        ) {
+          includeItem.model = models[includeItem.model];
+        }
+        if (includeItem.hasOwnProperty('include')) {
+          includeItem.include = await getModelInstance(models, includeItem.include);
+          return resolve(includeItem);
+        } else {
+          return resolve(includeItem);
+        }
+      }
+    }
+    return resolve(includeItem);
+  });
+};
+
 export const parseInclude = async(request) => {
   if (typeof request.query.include === 'undefined') return [];
 
@@ -28,43 +64,6 @@ export const parseInclude = async(request) => {
 
   const models = getModels(request);
   if (models.isBoom) return models;
-
-  const getModelInstance = includeItem => {
-    return new Promise(async(resolve) => {
-      if (includeItem) {
-        if (typeof includeItem !== 'object') {
-          const singluarOrPluralMatch = Object.keys(models).find((modelName) => {
-            const { _singular, _plural } = models[modelName];
-            return _singular === includeItem || _plural === includeItem;
-          });
-
-          if (singluarOrPluralMatch) {
-            return resolve(models[singluarOrPluralMatch]);
-          }
-        }
-
-        if (typeof includeItem === 'string' && models.hasOwnProperty(includeItem)) {
-          return resolve(models[includeItem]);
-        } else if (typeof includeItem === 'object') {
-          if (
-            typeof includeItem.model === 'string' &&
-            includeItem.model.length &&
-            models.hasOwnProperty(includeItem.model)
-          ) {
-            includeItem.model = models[includeItem.model];
-          }
-          if (includeItem.hasOwnProperty('include')) {
-            includeItem.include = await getModelInstance(includeItem.include);
-            return resolve(includeItem);
-          } else {
-            return resolve(includeItem);
-          }
-        }
-      } else {
-        return resolve(includeItem);
-      }
-    });
-  };
 
   const jsonValidation = joi.string().regex(/^\{.*?"model":.*?\}$/);
   const includes = include.map(async(b) => {
@@ -77,7 +76,7 @@ export const parseInclude = async(request) => {
       //
     }
 
-    return getModelInstance(a);
+    return getModelInstance(models, a);
   }).filter(identity);
 
   return await Promise.all(includes);

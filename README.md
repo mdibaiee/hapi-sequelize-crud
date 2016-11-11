@@ -112,9 +112,14 @@ Getting related models is easy, just use a query parameter `include`.
 // GET /teams?include=city or
 // GET /teams?include={"model": "City"}
 
-
 // results in a Sequelize query:
 Team.findAll({include: City})
+
+or if association defined with an alias
+// GET /players?include={"model": "Master", "as": "Couch"}
+
+// results in a Sequelize query:
+Players.findAll({include: Master, as: 'Couch'})
 ```
 
 If you want to get multiple related models, just pass multiple `include` parameters.
@@ -135,13 +140,54 @@ For models that have a many-to-many relationship, you can also pass the plural v
 Team.findAll({include: [Player]})
 ```
 
-Filtering by related models property, you can pass **where** paremeter inside each **include** item(s) object.
+Filtering by related models property, you can pass **where** paremeter inside each **include** items object.
 ```js
 // returns all team with their related City where City property name equals Healdsburg
 // GET /teams?include={"model": "City", "where": {"name": "Healdsburg"}}
 
 // results in a Sequelize query:
 Team.findAll({include: {model: City, where: {name: 'Healdsburg'}}})
+```
+
+More complex example with nested include, association alias and association filtering.
+```js
+// returns all team with its players along with its couch of each player
+// GET /cities?include[]={
+//   "model": "Team",
+//   "include": {
+//     "model": "Player",
+//     "where": {
+//       "name": "Pinot"
+//     },
+//     "include": {
+//       "model": "Master",
+//       "as": "Coach",
+//       "where": {
+//         "name": "Shifu"
+//       }
+//     }
+//   }
+// }
+
+// results in a Sequelize query:
+City.findAll({
+  include: {
+   model: Team,
+   include: {
+     model: Player,
+     where: {
+       name: Pinot
+     },
+     include: {
+       model: Master,
+       as: 'Coach',
+       where: {
+         name: 'Shifu'
+       }
+     }
+   }
+  }
+})
 ```
 
 ## `limit` and `offset` queries

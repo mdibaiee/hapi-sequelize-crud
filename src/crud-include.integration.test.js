@@ -112,7 +112,7 @@ test('multiple includes /team?include[]=players&include[]={"model": "City"}', as
   t.is(result.City.id, city1.id);
 });
 
-test('inlcude filter /teams?include[]={"model": "City", "where": {"name": "Healdsburg"}}'
+test('include filter /teams?include[]={"model": "City", "where": {"name": "Healdsburg"}}'
   , async(t) => {
     const { server } = t.context;
     const url = '/teams?include[]={"model": "City", "where": {"name": "Healdsburg"}}';
@@ -122,29 +122,14 @@ test('inlcude filter /teams?include[]={"model": "City", "where": {"name": "Heald
     t.is(statusCode, STATUS_OK);
   });
 
-test('nested inlcude filter ' +
-  '/city?include[]={"model": "Team", "include": {"model": "Player", "where": {"name": "Pinot"}}}'
-  , async(t) => {
-  const { instances, server } = t.context;
-  const { city1, team1, player2 } = instances;
-    // eslint-disable-next-line max-len
-  const url = '/city?include[]={"model": "Team", "include": {"model": "Player", "where": {"name": "Pinot"}}}';
-  const method = 'GET';
-
-  const { result, statusCode } = await server.inject({ url, method });
-  t.is(statusCode, STATUS_OK);
-  t.is(result.id, city1.id);
-  t.is(result.Teams[0].id, team1.id);
-  t.is(result.Teams[0].Players[0].id, player2.id);
-});
-
-test('nested inlcude filter ' +
-  '/city?include[]={"model": "Team", "include": {"model": "City", "where": {"name": "Healdsburg"}}}'
+test('nested include filter ' +
+  '/citiy?include[]=' +
+  '{"model": "Team", "include": {"model": "City", "where": {"name": "Healdsburg"}}}'
   , async(t) => {
   const { instances, server } = t.context;
   const { city1, team1, team2 } = instances;
-  // eslint-disable-next-line max-len
-  const url = '/city?include[]={"model": "Team", "include": {"model": "City", "where": {"name": "Healdsburg"}}}';
+  const url = '/city?include[]=' +
+      '{"model": "Team", "include": {"model": "City", "where": {"name": "Healdsburg"}}}';
   const method = 'GET';
 
   const { result, statusCode } = await server.inject({ url, method });
@@ -154,4 +139,24 @@ test('nested inlcude filter ' +
   const teamIds = result.Teams.map(({ id }) => id);
   t.truthy(teamIds.includes(team1.id));
   t.truthy(teamIds.includes(team2.id));
+});
+
+test('complex include ' +
+  '/cities?include[]={"model":"Team", ' +
+  '"include":{ "model":"Player", "where":{"name": "Pinot"}, ' +
+  '"include":{ "model":"Master", "as":"Coach", "where":{"name": "Shifu"}}}}'
+  , async(t) => {
+  const { instances, server } = t.context;
+  const { city1, master1, player2, team1 } = instances;
+  const method = 'GET';
+  const url = '/cities?include[]={"model":"Team", ' +
+      '"include":{ "model":"Player", "where":{"name": "Pinot"}, ' +
+      '"include":{ "model":"Master", "as":"Coach", "where":{"name": "Shifu"}}}}';
+
+  const { result, statusCode } = await server.inject({ url, method });
+  t.is(statusCode, STATUS_OK);
+  t.is(result[0].id, city1.id);
+  t.is(result[0].Teams[0].id, team1.id);
+  t.is(result[0].Teams[0].Players[0].id, player2.id);
+  t.is(result[0].Teams[0].Players[0].Coach.id, master1.id);
 });
