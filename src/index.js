@@ -37,7 +37,6 @@ const register = (server, options = {}, next) => {
 
     // Join tables
     if (model.options.name.singular !== model.name) continue;
-    crud(server, model, options);
 
     for (const key of Object.keys(model.associations)) {
       const association = model.associations[key];
@@ -92,6 +91,17 @@ const register = (server, options = {}, next) => {
       }
     }
   }
+
+  // build the methods for each model now that we've defined all the
+  // associations
+  Object.keys(models).filter((modelName) => {
+    const model = models[modelName];
+    return model.options.name.singular === model.name;
+  }).forEach((modelName) => {
+    const model = models[modelName];
+    crud(server, model, options);
+  });
+
 
   next();
 };
