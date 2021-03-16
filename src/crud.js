@@ -5,16 +5,16 @@ import _ from 'lodash';
 import { parseInclude, parseWhere, parseLimitAndOffset, parseOrder } from './utils';
 import { notFound } from 'boom';
 import * as associations from './associations/index';
-import getConfigForMethod from './get-config-for-method.js';
+import getConfigForMethod, { sequelizeOperators } from './get-config-for-method.js';
 
 const createAll = ({
-  server,
-  model,
-  prefix,
-  config,
-  attributeValidation,
-  associationValidation,
-  scopes,
+    server,
+    model,
+    prefix,
+    config,
+    attributeValidation,
+    associationValidation,
+    scopes,
 }) => {
   Object.keys(methods).forEach((method) => {
     methods[method]({
@@ -35,27 +35,28 @@ const createAll = ({
 export { associations };
 
 /*
-The `models` option, becomes `permissions`, and can look like:
+ The `models` option, becomes `permissions`, and can look like:
 
-```
-models: ['cat', 'dog']
-```
+ ```
+ models: ['cat', 'dog']
+ ```
 
-or
+ or
 
-```
-models: {
-  cat: ['list', 'get']
-  , dog: true // all
-}
-```
+ ```
+ models: {
+ cat: ['list', 'get']
+ , dog: true // all
+ }
+ ```
 
-*/
+ */
 
 export default (server, model, { prefix, defaultConfig: config, models: permissions }) => {
   const modelName = model._singular;
   const modelAttributes = Object.keys(model.attributes);
   const associatedModelNames = Object.keys(model.associations);
+  const associatedModelAliases = _.map(model.associations, (assoc => assoc.as));
   const modelAssociations = [
     ...associatedModelNames,
     ..._.flatMap(associatedModelNames, (associationName) => {
@@ -71,13 +72,28 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
     return params;
   }, {});
 
-  const validAssociations = modelAssociations.length
-    ? joi.string().valid(...modelAssociations)
-    : joi.valid(null);
+  const modelsHasAssociations = modelAssociations && modelAssociations.length;
+  const validAssociationsString = modelsHasAssociations
+      ? joi.string().valid(...modelAssociations)
+      : joi.valid(null);
+  const validAssociationsObject = modelsHasAssociations
+      ? joi.object().keys({
+        model: joi.string().valid(...modelAssociations),
+        where: joi.object().keys({
+          ...attributeValidation,
+          ...sequelizeOperators,
+        }),
+        as: joi.string().valid(...associatedModelAliases),
+        include: joi.any(), // @Todo: should validate the same as associationValidation var below
+      })
+      : joi.valid(null);
   const associationValidation = {
-    include: [joi.array().items(validAssociations), validAssociations],
+    include: [
+      joi.array().items(validAssociationsString, validAssociationsObject),
+      validAssociationsString,
+      validAssociationsObject,
+    ],
   };
-
   const scopes = Object.keys(model.options.scopes);
 
   // if we don't have any permissions set, just create all the methods
@@ -91,11 +107,11 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       associationValidation,
       scopes,
     });
-  // if permissions are set, but we can't parse them, throw an error
+    // if permissions are set, but we can't parse them, throw an error
   } else if (!Array.isArray(permissions)) {
     throw new Error('hapi-sequelize-crud: `models` property must be an array');
-  // if permissions are set, but the only thing we've got is a model name, there
-  // are no permissions to be set, so just create all methods and move on
+    // if permissions are set, but the only thing we've got is a model name, there
+    // are no permissions to be set, so just create all methods and move on
   } else if (permissions.includes(modelName)) {
     createAll({
       server,
@@ -106,7 +122,7 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
       associationValidation,
       scopes,
     });
-  // if we've gotten here, we have complex permissions and need to set them
+    // if we've gotten here, we have complex permissions and need to set them
   } else {
     const permissionOptions = permissions.filter((permission) => {
       return permission.model === modelName;
@@ -147,14 +163,14 @@ export default (server, model, { prefix, defaultConfig: config, models: permissi
   }
 };
 
-export const list = ({ server, model, prefix = '/', config }) => {
+export const list = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._plural),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { limit, offset } = parseLimitAndOffset(request);
       const order = parseOrder(request);
@@ -174,14 +190,14 @@ export const list = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const get = ({ server, model, prefix = '/', config }) => {
+export const get = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._singular, '{id?}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { id } = request.params;
       if (id) where[model.primaryKeyField] = id;
@@ -198,14 +214,14 @@ export const get = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const scope = ({ server, model, prefix = '/', config }) => {
+export const scope = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'GET',
     path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
       const { limit, offset } = parseLimitAndOffset(request);
       const order = parseOrder(request);
@@ -255,9 +271,9 @@ export const destroy = ({ server, model, prefix = '/', config }) => {
 
       if (!list.length) {
         return void reply(id
-          ? notFound(`${id} not found.`)
-          : notFound('Nothing found.')
-          );
+            ? notFound(`${id} not found.`)
+            : notFound('Nothing found.')
+        );
       }
 
       await Promise.all(list.map(instance => instance.destroy()));
@@ -284,9 +300,9 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
 
       if (!list.length) {
         return void reply(id
-          ? notFound(`${id} not found.`)
-          : notFound('Nothing found.')
-          );
+            ? notFound(`${id} not found.`)
+            : notFound('Nothing found.')
+        );
       }
 
       await Promise.all(list.map(instance => instance.destroy()));
@@ -299,14 +315,14 @@ export const destroyAll = ({ server, model, prefix = '/', config }) => {
   });
 };
 
-export const destroyScope = ({ server, model, prefix = '/', config }) => {
+export const destroyScope = async ({ server, model, prefix = '/', config }) => {
   server.route({
     method: 'DELETE',
     path: path.join(prefix, model._plural, '{scope}'),
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       if (include instanceof Error) return void reply(include);

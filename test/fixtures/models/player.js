@@ -14,6 +14,10 @@ export default (sequelize, DataTypes) => {
         models.Player.belongsTo(models.Team, {
           foreignKey: { name: 'teamId' },
         });
+        models.Player.belongsTo(models.Master, {
+          foreignKey: 'coachId',
+          as: 'Coach',
+        });
       },
     },
     scopes: {

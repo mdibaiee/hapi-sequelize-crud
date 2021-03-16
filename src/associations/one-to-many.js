@@ -19,14 +19,14 @@ export default (server, a, b, names, options) => {
   update(server, a, b, names);
 };
 
-export const get = (server, a, b, names) => {
+export const get = async (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
 
       const base = await a.findOne({
         where: {
@@ -51,14 +51,14 @@ export const get = (server, a, b, names) => {
   });
 };
 
-export const list = (server, a, b, names) => {
+export const list = async (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -77,16 +77,16 @@ export const list = (server, a, b, names) => {
   });
 };
 
-export const scope = (server, a, b, names) => {
+export const scope = async (server, a, b, names) => {
   const scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -116,7 +116,7 @@ export const scope = (server, a, b, names) => {
   });
 };
 
-export const scopeScope = (server, a, b, names) => {
+export const scopeScope = async (server, a, b, names) => {
   const scopes = {
     a: Object.keys(a.options.scopes),
     b: Object.keys(b.options.scopes),
@@ -124,11 +124,11 @@ export const scopeScope = (server, a, b, names) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${names.a.plural}/{scopea}/${names.b.plural}/{scopeb}`,
+    path: `${prefix}${names.a.plural}/{scopea}/${names.b.plural}/{scopeb}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const list = await b.scope(request.params.scopeb).findAll({
@@ -152,14 +152,14 @@ export const scopeScope = (server, a, b, names) => {
   });
 };
 
-export const destroy = (server, a, b, names) => {
+export const destroy = async (server, a, b, names) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -179,16 +179,16 @@ export const destroy = (server, a, b, names) => {
   });
 };
 
-export const destroyScope = (server, a, b, names) => {
+export const destroyScope = async (server, a, b, names) => {
   const scopes = Object.keys(b.options.scopes);
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.plural}/{scope}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -221,14 +221,14 @@ export const destroyScope = (server, a, b, names) => {
   });
 };
 
-export const update = (server, a, b, names) => {
+export const update = async (server, a, b, names) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.plural}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.plural}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({

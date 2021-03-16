@@ -14,14 +14,14 @@ export default (server, a, b, names, options) => {
   update(server, a, b, names);
 };
 
-export const get = (server, a, b, names) => {
+export const get = async (server, a, b, names) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.singular}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -47,7 +47,7 @@ export const get = (server, a, b, names) => {
 export const create = (server, a, b, names) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${names.a.singular}/{id}/${names.b.singular}`,
+    path: `${prefix}${names.a.singular}/{id}/${names.b.singular}`,
 
     @error
     async handler(request, reply) {
@@ -67,14 +67,14 @@ export const create = (server, a, b, names) => {
   });
 };
 
-export const destroy = (server, a, b, names) => {
+export const destroy = async (server, a, b, names) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
@@ -99,11 +99,11 @@ export const destroy = (server, a, b, names) => {
 export const update = (server, a, b, names) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
+    path: `${prefix}${names.a.singular}/{aid}/${names.b.singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      const include = parseInclude(request);
+      const include = await parseInclude(request);
       const where = parseWhere(request);
 
       const base = await a.findOne({
